@@ -21,21 +21,6 @@ find_package(LibXslt REQUIRED)
 # Find and include iconv
 find_package(Iconv REQUIRED)
 
-# Find and include xmlsec
-# find_package(XMLSec REQUIRED)
-
-# Debug output found include paths
-message(STATUS "Found OpenSSL: ${OPENSSL_INCLUDE_DIR}")
-message(STATUS "Found OpenSSL: ${OPENSSL_LIBRARIES}")
-message(STATUS "Found LibXML2: ${LIBXML2_INCLUDE_DIR}")
-message(STATUS "Found LibXML2: ${LIBXML2_LIBRARIES}")
-message(STATUS "Found LibXslt: ${LIBXSLT_INCLUDE_DIR}")
-message(STATUS "Found LibXslt: ${LIBXSLT_LIBRARIES}")
-message(STATUS "Found Iconv: ${Iconv_INCLUDE_DIR}")
-message(STATUS "Found Iconv: ${Iconv_LIBRARY}")
-message(STATUS "Found XMLSec: ${XMLSEC_INCLUDE_DIR}")
-message(STATUS "Found XMLSec: ${XMLSEC_LIBRARY} ${XMLSEC_OPENSSL_LIBRARY}")
-
 # Include directories
 include_directories(${OPENSSL_INCLUDE_DIR} ${LIBXML2_INCLUDE_DIR} ${LIBXSLT_INCLUDE_DIR} ${Iconv_INCLUDE_DIR} ${XMLSEC_INCLUDE_DIR})
 
