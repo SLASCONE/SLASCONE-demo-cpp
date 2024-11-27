@@ -11,27 +11,42 @@ endif()
 
 # Find and include OpenSSL
 find_package(OpenSSL REQUIRED)
-include_directories(${OPENSSL_INCLUDE_DIR})
 
 # Find and include LibXML2
 find_package(LibXml2 REQUIRED)
-include_directories(${LIBXML2_INCLUDE_DIR})
 
 # Find and include libxslt
 find_package(LibXslt REQUIRED)
-include_directories(${LIBXSLT_INCLUDE_DIR})
 
 # Find and include iconv
 find_package(Iconv REQUIRED)
-include_directories(${Iconv_INCLUDE_DIR})
 
 # Find and include xmlsec
-# find_package(xmlsec1 REQUIRED)
-include_directories(${XMLSEC_INCLUDE_DIR})
+# find_package(XMLSec REQUIRED)
 
-# Define XMLSEC_CRYPTO_DYNAMIC_LOADING
-add_definitions(-DXMLSEC_CRYPTO_DYNAMIC_LOADING=1)
+# Debug output found include paths
+message(STATUS "Found OpenSSL: ${OPENSSL_INCLUDE_DIR}")
+message(STATUS "Found OpenSSL: ${OPENSSL_LIBRARIES}")
+message(STATUS "Found LibXML2: ${LIBXML2_INCLUDE_DIR}")
+message(STATUS "Found LibXML2: ${LIBXML2_LIBRARIES}")
+message(STATUS "Found LibXslt: ${LIBXSLT_INCLUDE_DIR}")
+message(STATUS "Found LibXslt: ${LIBXSLT_LIBRARIES}")
+message(STATUS "Found Iconv: ${Iconv_INCLUDE_DIR}")
+message(STATUS "Found Iconv: ${Iconv_LIBRARY}")
+message(STATUS "Found XMLSec: ${XMLSEC_INCLUDE_DIR}")
+message(STATUS "Found XMLSec: ${XMLSEC_LIBRARY} ${XMLSEC_OPENSSL_LIBRARY}")
+
+# Include directories
+include_directories(${OPENSSL_INCLUDE_DIR} ${LIBXML2_INCLUDE_DIR} ${LIBXSLT_INCLUDE_DIR} ${Iconv_INCLUDE_DIR} ${XMLSEC_INCLUDE_DIR})
+
+# Define XMLSEC definitions
+add_definitions(-D__XMLSEC_FUNCTION__=__func__)
+add_definitions(-DXMLSEC_NO_SIZE_T)
+add_definitions(-DXMLSEC_OPENSSL3_ENGINES=1)
+add_definitions(-DXMLSEC_NO_GOST=1)
+add_definitions(-DXMLSEC_NO_GOST2012=1)
+add_definitions(-DXMLSEC_NO_CRYPTO_DYNAMIC_LOADING=1)
 add_definitions(-DXMLSEC_CRYPTO_OPENSSL=1)
 
 # Link libraries
-target_link_libraries(XmlSignatureValidationCpp ${OPENSSL_LIBRARIES} ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${Iconv_LIBRARY} ${XMLSEC_LIBRARY})
+target_link_libraries(SLASCONE-demo-cpp ${OPENSSL_LIBRARIES} ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${Iconv_LIBRARY} ${XMLSEC_LIBRARY} ${XMLSEC_OPENSSL_LIBRARY} /usr/lib/x86_64-linux-gnu/libxmlsec1-gnutls.so /usr/lib/x86_64-linux-gnu/libxmlsec1-nss.so /usr/lib/x86_64-linux-gnu/libxmlsec1-gcrypt.so)

@@ -21,4 +21,4 @@ RUN chmod +x /tmp/install-vcpkg.sh \
     && rm -f /tmp/install-vcpkg.sh
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends openssl libxml2 libxslt1.1 libxmlsec1
+    && apt-get -y install --no-install-recommends openssl libxml2 libxml2-dev libxslt1.1 libxslt1-dev libxmlsec1 libxmlsec1-dev
