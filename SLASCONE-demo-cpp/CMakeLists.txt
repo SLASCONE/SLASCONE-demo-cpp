@@ -3,7 +3,8 @@
 #
 
 # SLASCONE-demo-cpp executable.
-add_executable (SLASCONE-demo-cpp "SLASCONE-demo-cpp.cpp" "SLASCONE-demo-cpp.h")
+file(GLOB_RECURSE SOURCES "*.cpp" "*.h")
+add_executable (SLASCONE-demo-cpp ${SOURCES})
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET SLASCONE-demo-cpp PROPERTY CXX_STANDARD 20)
@@ -17,9 +18,6 @@ find_package(LibXml2 REQUIRED)
 
 # Find and include libxslt
 find_package(LibXslt REQUIRED)
-
-# Find and include iconv
-find_package(Iconv REQUIRED)
 
 # Include directories
 include_directories(${OPENSSL_INCLUDE_DIR} ${LIBXML2_INCLUDE_DIR} ${LIBXSLT_INCLUDE_DIR} ${Iconv_INCLUDE_DIR} ${XMLSEC_INCLUDE_DIR})
@@ -35,4 +33,4 @@ add_definitions(-DXMLSEC_CRYPTO_OPENSSL=1)
 add_definitions(-DXMLSEC_NO_XSLT=1)
 
 # Link libraries
-target_link_libraries(SLASCONE-demo-cpp ${OPENSSL_LIBRARIES} ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${Iconv_LIBRARY} ${XMLSEC_LIBRARY} ${XMLSEC_OPENSSL_LIBRARY} /usr/lib/x86_64-linux-gnu/libxmlsec1-gnutls.so /usr/lib/x86_64-linux-gnu/libxmlsec1-nss.so /usr/lib/x86_64-linux-gnu/libxmlsec1-gcrypt.so)
+target_link_libraries(SLASCONE-demo-cpp ${OPENSSL_LIBRARIES} ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${Iconv_LIBRARY} ${XMLSEC_LIBRARY} ${XMLSEC_OPENSSL_LIBRARY})
