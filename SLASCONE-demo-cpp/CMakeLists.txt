@@ -47,6 +47,7 @@ add_definitions(-DXMLSEC_NO_GOST=1)
 add_definitions(-DXMLSEC_NO_GOST2012=1)
 add_definitions(-DXMLSEC_NO_CRYPTO_DYNAMIC_LOADING=1)
 add_definitions(-DXMLSEC_CRYPTO_OPENSSL=1)
+add_definitions(-DXMLSEC_NO_XSLT=1)
 
 # Link libraries
 target_link_libraries(SLASCONE-demo-cpp ${OPENSSL_LIBRARIES} ${LIBXML2_LIBRARIES} ${LIBXSLT_LIBRARIES} ${Iconv_LIBRARY} ${XMLSEC_LIBRARY} ${XMLSEC_OPENSSL_LIBRARY} /usr/lib/x86_64-linux-gnu/libxmlsec1-gnutls.so /usr/lib/x86_64-linux-gnu/libxmlsec1-nss.so /usr/lib/x86_64-linux-gnu/libxmlsec1-gcrypt.so)

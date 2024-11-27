@@ -102,7 +102,7 @@ done:
 
 int main(int argc, const char* argv[]) {
 
-    // Check: XML file to check must be provided as an argument
+    // XML file to check must be provided as an argument
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <xml-file>" << std::endl;
         return -1;
@@ -119,33 +119,12 @@ AHGtgLYGjbKcW4xYmpDGl0txfcipAr1zMj7X3oCO9lHcFRnXdzx+TTeJYxQX2XVb
 hQIDAQAB
 -----END PUBLIC KEY-----)";
 
-	//===========================================================================================================
 	// Verify the signature of the XML file
 
-#ifndef XMLSEC_NO_XSLT
-    xsltSecurityPrefsPtr xsltSecPrefs = NULL;
-#endif /* XMLSEC_NO_XSLT */
-
-    /* Init libxml and libxslt libraries */
+    /* Init libxml libraries */
     xmlInitParser();
-    LIBXML_TEST_VERSION
-        xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
+    LIBXML_TEST_VERSION xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
     xmlSubstituteEntitiesDefault(1);
-#ifndef XMLSEC_NO_XSLT
-    xmlIndentTreeOutput = 1;
-#endif /* XMLSEC_NO_XSLT */
-
-    /* Init libxslt */
-#ifndef XMLSEC_NO_XSLT
-    /* disable everything */
-    xsltSecPrefs = xsltNewSecurityPrefs();
-    xsltSetSecurityPrefs(xsltSecPrefs, XSLT_SECPREF_READ_FILE, xsltSecurityForbid);
-    xsltSetSecurityPrefs(xsltSecPrefs, XSLT_SECPREF_WRITE_FILE, xsltSecurityForbid);
-    xsltSetSecurityPrefs(xsltSecPrefs, XSLT_SECPREF_CREATE_DIRECTORY, xsltSecurityForbid);
-    xsltSetSecurityPrefs(xsltSecPrefs, XSLT_SECPREF_READ_NETWORK, xsltSecurityForbid);
-    xsltSetSecurityPrefs(xsltSecPrefs, XSLT_SECPREF_WRITE_NETWORK, xsltSecurityForbid);
-    xsltSetDefaultSecurityPrefs(xsltSecPrefs);
-#endif /* XMLSEC_NO_XSLT */
 
     /* Init xmlsec library */
     if (xmlSecInit() < 0) {
@@ -159,20 +138,6 @@ hQIDAQAB
         return(-1);
     }
 
-    /* Load default crypto engine if we are supporting dynamic
-     * loading for xmlsec-crypto libraries. Use the crypto library
-     * name ("openssl", "nss", etc.) to load corresponding
-     * xmlsec-crypto library.
-     */
-#ifdef XMLSEC_CRYPTO_DYNAMIC_LOADING
-    if (xmlSecCryptoDLLoadLibrary(NULL) < 0) {
-        fprintf(stderr, "Error: unable to load default xmlsec-crypto library. Make sure\n"
-            "that you have it installed and check shared libraries path\n"
-            "(LD_LIBRARY_PATH and/or LTDL_LIBRARY_PATH) environment variables.\n");
-        return(-1);
-    }
-#endif /* XMLSEC_CRYPTO_DYNAMIC_LOADING */
-
     /* Init crypto library */
     if (xmlSecCryptoAppInit(NULL) < 0) {
         fprintf(stderr, "Error: crypto initialization failed.\n");
@@ -185,6 +150,7 @@ hQIDAQAB
         return(-1);
     }
 
+    /* Verify XML file */
 	if (verify_file(argv[1], pemKey.c_str(), pemKey.length()) < 0) {
         return(-1);
     }
@@ -198,14 +164,7 @@ hQIDAQAB
     /* Shutdown xmlsec library */
     xmlSecShutdown();
 
-    /* Shutdown libxslt/libxml */
-#ifndef XMLSEC_NO_XSLT
-    xsltFreeSecurityPrefs(xsltSecPrefs);
-    xsltCleanupGlobals();
-#endif /* XMLSEC_NO_XSLT */
     xmlCleanupParser();
-
-    //===========================================================================================================
 
     return 0;
 }
