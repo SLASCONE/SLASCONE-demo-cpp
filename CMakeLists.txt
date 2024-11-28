@@ -13,4 +13,5 @@ endif()
 project ("SLASCONE-demo-cpp")
 
 # Include sub-projects.
+add_subdirectory ("SLASCONE-demo-client")
 add_subdirectory ("SLASCONE-demo-cpp")

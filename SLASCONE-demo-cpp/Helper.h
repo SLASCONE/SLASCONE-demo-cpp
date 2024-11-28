@@ -6,30 +6,31 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/err.h>
+#include <SlasconeOpenApiClient/ApiClient.h>
+#include <SlasconeOpenApiClient/api/ProvisioningApi.h>
+
+using namespace std;
+using namespace org::openapitools::client::api;
 
 namespace SLASCONE_demo_cpp
 {
     class Helper
     {
     private:
-        /* data */
+        // Reference to a ProvisioningApi instance
+        unique_ptr<ProvisioningApi> provisioningApi;
+
     public:
         Helper(/* args */);
         ~Helper();
 
-        /**
-         * verify_file:
-         * @xml_file:           the signed XML file name.
-         * @pemKey:             the PEM public key.
-         * @pemKeyLength:       the length of the PEM public key.
-         *
-         * Verifies XML signature in #xml_file using public key from #key_file.
-         *
-         * Returns 0 on success or a negative value if an error occurs.
-         */
+        int send_heartbeat();
+        int get_license_by_id();
         int verify_file(const char *xml_file);
-
 		int print_license_infos(const char* xml_file);
-    };
 
-} // namespace SLASCONE_demo_
+    protected:
+        int print_license(shared_ptr<LicenseDto> licenseDto);
+        int print_license(shared_ptr<LicenseInfoDto> licenseInfoDto);
+    };
+}
