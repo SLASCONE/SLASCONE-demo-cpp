@@ -28,6 +28,8 @@ namespace SLASCONE_demo_cpp
          * Returns 0 on success or a negative value if an error occurs.
          */
         int verify_file(const char *xml_file);
+
+		int print_license_infos(const char* xml_file);
     };
 
 } // namespace SLASCONE_demo_

@@ -12,18 +12,37 @@ using namespace SLASCONE_demo_cpp;
 
 int main(int argc, const char* argv[]) {
 
-    // XML file to check must be provided as an argument
-    if (argc < 2) {
-        cerr << "Usage: " << argv[0] << " <xml-file>" << std::endl;
-        return -1;
-    }
+	Helper helper;
 
-    Helper helper;
+	string input;
 
-    /* Verify XML file */
-	if (helper.verify_file(argv[1]) < 0) {
-        return(-1);
-    }
+	while (true) {
+		cout << "Menu Options:" << endl;
+		cout << "1: Validate offline license file signature" << endl;
+		cout << "2: Print license infos" << endl;
+		cout << "3: Option 3" << endl;
+		cout << "x: Exit" << endl;
+		cout << "> ";
+		cin >> input;
 
-    return 0;
+		if (input == "x") {
+			break;
+		}
+
+		if (input == "1") {
+			helper.verify_file("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e.xml");
+		}
+		else if (input == "2") {
+			cout << "Option 2 selected" << endl;
+			// Call method for Option 2
+		}
+		else if (input == "3") {
+			cout << "Option 3 selected" << endl;
+			// Call method for Option 3
+		}
+		else {
+			cout << "Invalid choice, please try again." << endl;
+		}
+	}
+	return 0;
 }

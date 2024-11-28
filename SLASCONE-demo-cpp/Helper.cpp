@@ -54,3 +54,10 @@ Helper::verify_file(const char* xml_file) {
     LicenseXmlValidator::LicenseXmlValidator validator;
     return validator.verify_file(xml_file, pemKey.c_str(), pemKey.length());
 }
+
+int Helper::print_license_infos(const char* xml_file)
+{
+    // Read and deserialize the license XML file using libxml2
+        
+    return 0;
+}
