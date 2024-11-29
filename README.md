@@ -1,6 +1,6 @@
 # LICENSING & ANALYTICS FOR SOFTWARE AND IoT VENDORS
 
-This console application demonstrates the usage of the SLASCONE API for standard operations such as activation, license file validation, heartbeat and floating sesion management.
+This console application demonstrates the usage of the SLASCONE API for standard operations such as activation, license file validation, heartbeat and floating session management.
 
 For more information about this solution, visit
 https://slascone.com/ and/or
