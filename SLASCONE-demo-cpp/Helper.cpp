@@ -85,18 +85,84 @@ Helper::~Helper()
 }
 
 /**
- * send_heartbeat:
+ * activate_license:
+ * 
+ * Activate a license
+ * 
+ * @return 0 on success or a negative value if an error occurs.
+ */
+int
+Helper::activate_license()
+{
+    shared_ptr<ActivateClientDto> activateLicense = make_shared<ActivateClientDto>();
+    activateLicense->setProductId(productId);
+    activateLicense->setLicenseKey("27180460-29df-4a5a-a0a1-78c85ab6cee0");
+    activateLicense->setClientId(get_device_id());
+    activateLicense->setSoftwareVersion("24.11");    
+    activateLicense->setClientDescription(get_os_name());
+
+    // Create a promise and future
+    auto promise = make_shared<std::promise<shared_ptr<LicenseInfoDto>>>();
+    future<shared_ptr<LicenseInfoDto>> future = promise->get_future();
+
+    provisioningApi->activateLicense(isvId, activateLicense)
+        .then([promise](pplx::task<shared_ptr<LicenseInfoDto>> licenseInfo) mutable
+              {
+                try {
+                    auto licenseInfoDto = licenseInfo.get();
+                    promise->set_value(licenseInfoDto);
+                }
+                catch (...) {
+                    auto ex = current_exception();
+                    promise->set_exception(ex);
+                } });
+
+    shared_ptr<LicenseInfoDto> licenseInfoDto;
+
+    try
+    {
+        licenseInfoDto = future.get();
+    }
+    catch (const ApiException &e)
+    {
+        shared_ptr<istream> content = e.getContent();
+        ErrorResultObjects errorResultObjects;
+        string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
+        errorResultObjects.fromJson(web::json::value::parse(jsonStr));
+
+        cout << "activateLicense() error ID: " << errorResultObjects.getId() << endl;
+        cout << "activateLicense() error message: " << errorResultObjects.getMessage() << endl;
+    }
+    catch (const exception &e)
+    {
+        cout << "activateLicense() exception: " << e.what() << '\n';
+    }
+
+    if (licenseInfoDto != nullptr)
+    {
+        Helper::print_license(licenseInfoDto);
+    }
+    else
+    {
+        cout << "Error: licenseInfoDto is null." << '\n';
+    }
+
+    return 0;
+}
+
+/**
+ * send_license_heartbeat:
  * 
  * Send a license heartbeat
  * 
  * @return 0 on success or a negative value if an error occurs.
  */
 int 
-Helper::send_heartbeat()
+Helper::send_license_heartbeat()
 {
 	shared_ptr<AddHeartbeatDto> addHeartbeat = make_shared<AddHeartbeatDto>();
     addHeartbeat->setProductId(productId);
-    addHeartbeat->setClientId("24A43FCC-3674-0B19-A95F-047C160137E5");
+    addHeartbeat->setClientId(get_device_id());
 	addHeartbeat->setSoftwareVersion("24.11");
 	addHeartbeat->setOperatingSystem("C++ sample");
 
@@ -104,30 +170,40 @@ Helper::send_heartbeat()
     auto promise = make_shared<std::promise<shared_ptr<LicenseInfoDto>>>();
     future<shared_ptr<LicenseInfoDto>> future = promise->get_future();
 
-	provisioningApi->addHeartbeat(isvId, addHeartbeat)
-		.then([promise](pplx::task<shared_ptr<LicenseInfoDto>> licenseInfo) mutable
-			{
+    provisioningApi->addHeartbeat(isvId, addHeartbeat)
+        .then([promise](pplx::task<shared_ptr<LicenseInfoDto>> licenseInfo) mutable
+              {
 				try {
 					auto licenseInfoDto = licenseInfo.get();
 					promise->set_value(licenseInfoDto);
 				}
 				catch (...) {
-					promise->set_exception(current_exception());
-				}
-			});
+                    auto ex = current_exception();
+					promise->set_exception(ex);
+				} });
 
-	shared_ptr<LicenseInfoDto> licenseInfoDto;
+    shared_ptr<LicenseInfoDto> licenseInfoDto;
 
-	try
-	{
-		licenseInfoDto = future.get();
-	}
-	catch (const exception &e)
-	{
-		cout << "addHeartbeat() exception: " << e.what() << '\n';
-	}
+    try
+    {
+        licenseInfoDto = future.get();
+    }
+    catch (const ApiException &e)
+    {
+        shared_ptr<istream> content = e.getContent();
+        ErrorResultObjects errorResultObjects;
+        string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
+        errorResultObjects.fromJson(web::json::value::parse(jsonStr));
 
-	if (licenseInfoDto != nullptr)
+        cout << "addHeartbeat() error ID: " << errorResultObjects.getId() << endl;
+        cout << "addHeartbeat() error message: " << errorResultObjects.getMessage() << endl;
+    }
+    catch (const exception &e)
+    {
+        cout << "addHeartbeat() exception: " << e.what() << '\n';
+    }
+
+    if (licenseInfoDto != nullptr)
 	{
 		Helper::print_license(licenseInfoDto);
 	}
@@ -195,6 +271,64 @@ int Helper::print_license_infos(const char* xml_file)
     return 0;
 }
 
+/**
+ * get_os_name:
+ * 
+ * Get the operating system name
+ * 
+ * @return the operating system name or an empty string if an error occurs.
+ */
+string
+Helper::get_os_name()
+{
+    #if defined(_WIN32) || defined(_WIN64)
+        return "Windows";
+    #elif defined(__linux__)
+        // Use the output of the command 'uname -sr' to get the Linux distribution name and version
+        string command = "uname -sr";
+        char buffer[128];
+        FILE* pipe = popen(command.c_str(), "r");
+        if (pipe == nullptr)
+        {
+            cout << "Error: popen() failed." << '\n';
+            return "";
+        }
+        string os_name = fgets(buffer, 128, pipe);
+        // Trim ending line feed/carriage return
+        os_name.erase(os_name.find_last_not_of("\n\r") + 1);
+        return os_name;
+    #elif defined(__APPLE__) || defined(__MACH__)
+        return "macOS";
+    #elif defined(__unix__)
+        return "Unix";
+    #else
+        return "Unknown operating system";
+    #endif
+}
+
+/**
+ * get_device_id:
+ * 
+ * Get the device ID
+ * 
+ * @return the device ID or an empty string if an error occurs.
+ * 
+ * Note: The device ID is the HOSTNAME environment variable.
+ */
+string 
+Helper::get_device_id()
+{
+    // Read HOSTNAME environment variable
+    const char* hostname = getenv("HOSTNAME");
+    if (hostname == nullptr)
+    {
+        cout << "Error: HOSTNAME environment variable not set." << '\n';
+        return "";
+    }
+
+    return hostname;
+}
+
 int 
 Helper::print_license(shared_ptr<LicenseDto> licenseDto)
 {
@@ -242,11 +376,13 @@ Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
     {
         cout << "License key: " << to_utf8string(licenseInfoDto->getLicenseKey()) << '\n';
         cout << "Legacy license key: " << to_utf8string(licenseInfoDto->getLegacyLicenseKey()) << '\n';
+        cout << "Token key: " << to_utf8string(licenseInfoDto->getTokenKey()) << '\n';
         cout << "License name: " << to_utf8string(licenseInfoDto->getLicenseName()) << '\n';
         cout << "Product name: " << to_utf8string(licenseInfoDto->getProductName()) << '\n';
         cout << "Template name: " << to_utf8string(licenseInfoDto->getTemplateName()) << '\n';
         cout << "License valid: " << licenseInfoDto->isIsLicenseValid() << '\n';
         cout << "Expiration date: " << to_utf8string(licenseInfoDto->getExpirationDateUtc().to_string()) << '\n';
+
 
         auto customer = licenseInfoDto->getCustomer();
         cout << "Customer company name: " << to_utf8string(customer->getCompanyName()) << '\n';

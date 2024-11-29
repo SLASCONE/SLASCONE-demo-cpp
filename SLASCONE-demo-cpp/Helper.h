@@ -24,10 +24,13 @@ namespace SLASCONE_demo_cpp
         Helper(/* args */);
         ~Helper();
 
-        int send_heartbeat();
+        int activate_license();
+        int send_license_heartbeat();
         int get_license_by_id();
         int verify_file(const char *xml_file);
 		int print_license_infos(const char* xml_file);
+        string get_os_name();
+        string get_device_id();
 
     protected:
         int print_license(shared_ptr<LicenseDto> licenseDto);
