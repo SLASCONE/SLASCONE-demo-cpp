@@ -62,36 +62,40 @@ int main(int argc, const char *argv[])
             // Read local license file
             cout << "-- Reading local license file..." << endl;
             // Add your code here
+			cout << "Not implemented yet." << endl;
         }
         else if (input == "4")
         {
             // Unassign license from device
             cout << "-- Unassigning license from device..." << endl;
-            // Add your code here
+			helper.unassign_token();
         }
         else if (input == "5")
         {
             // Add analytical heartbeat
             cout << "-- Adding analytical heartbeat..." << endl;
             // Add your code here
+			cout << "Not implemented yet." << endl;
         }
         else if (input == "6")
         {
             // Add usage heart beat
             cout << "-- Adding usage heartbeat..." << endl;
             // Add your code here
+			cout << "Not implemented yet." << endl;
         }
         else if (input == "7")
         {
             // Add consumption heartbeat
             cout << "-- Adding consumption heartbeat..." << endl;
             // Add your code here
+			cout << "Not implemented yet." << endl;
         }
         else if (input == "8")
         {
             // Open session
             cout << "-- Opening session..." << endl;
-            // Add your code here
+			helper.open_session();
         }
         else if (input == "9")
         {
@@ -103,7 +107,7 @@ int main(int argc, const char *argv[])
         {
             // Close session
             cout << "-- Closing session..." << endl;
-            // Add your code here
+			helper.close_session();
         }
         else if (input == "11")
         {
@@ -121,6 +125,7 @@ int main(int argc, const char *argv[])
         {
             // Read license file
             cout << "Reading license file..." << endl;
+			helper.print_license_infos("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e.xml");
         }
     }
     return 0;

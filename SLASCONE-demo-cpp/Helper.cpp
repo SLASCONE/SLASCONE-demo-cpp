@@ -2,6 +2,9 @@
 #include <fstream>
 #include <future>
 #include <string>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/err.h>
@@ -25,14 +28,19 @@ using namespace org::openapitools::client::api;
 using namespace utility::conversions;
 using namespace SLASCONE_demo_cpp;
 
-// Base URL
+// CHANGE these values according to your environment at: https://my.slascone.com/info
+
+//Use this to connect to the Argus Demo 
 const string baseUrl = "https://api.slascone.com";
 
+//Use this instead to connect to the SaaS environment
+//const string baseUrl = "https://api365.slascone.com";
+
 // ISV ID
-const string isvId = "2af5fe02-6207-4214-946e-b00ac5309f53";
+const string isvId = "2af5fe02-6207-4214-946e-b00ac5309f53"; // Find your own Isv Id at : https://my.slascone.com/administration/apikeys
 
 // Product ID
-const string productId = "b18657cc-1f7c-43fa-e3a4-08da6fa41ad3";
+const string productId = "b18657cc-1f7c-43fa-e3a4-08da6fa41ad3"; // Find your own product id key at : https://my.slascone.com/products
 
 // Provisioning key header
 const string provisioningKeyHeader = "ProvisioningKey";
@@ -40,8 +48,10 @@ const string provisioningKeyHeader = "ProvisioningKey";
 // Provisioning key
 const string provisioningKey = "NfEpJ2DFfgczdYqOjvmlgP2O/4VlqmRHXNE9xDXbqZcOwXTbH3TFeBAKKbEzga7D7ashHxFtZOR142LYgKWdNocibDgN75/P58YNvUZafLdaie7eGwI/2gX/XuDPtqDW";
 
-// Example PEM public key (replace this with your actual key)
-    const string pemKey =
+const string licenseKey = "27180460-29df-4a5a-a0a1-78c85ab6cee0"; // Just for demo, do not change this
+
+// CHANGE these values according to your environment at: https://my.slascone.com/administration/signature
+const string pemKey =
 R"(-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwpigzm+cZIyw6x253YRD
 mroGQyo0rO9qpOdbNAkE/FMSX+At5CQT/Cyr0eZTo2h+MO5gn5a6dwg2SYB/K1Yt
@@ -96,10 +106,10 @@ Helper::activate_license()
 {
     shared_ptr<ActivateClientDto> activateLicense = make_shared<ActivateClientDto>();
     activateLicense->setProductId(productId);
-    activateLicense->setLicenseKey("27180460-29df-4a5a-a0a1-78c85ab6cee0");
+    activateLicense->setLicenseKey(licenseKey);
     activateLicense->setClientId(get_device_id());
-    activateLicense->setSoftwareVersion("24.11");    
-    activateLicense->setClientDescription(get_os_name());
+    activateLicense->setClientName("SLASCONE C++ sample");
+    activateLicense->setSoftwareVersion("24.11");
 
     // Create a promise and future
     auto promise = make_shared<std::promise<shared_ptr<LicenseInfoDto>>>();
@@ -116,8 +126,6 @@ Helper::activate_license()
                     auto ex = current_exception();
                     promise->set_exception(ex);
                 } });
-
-    shared_ptr<LicenseInfoDto> licenseInfoDto;
 
     try
     {
@@ -164,7 +172,7 @@ Helper::send_license_heartbeat()
     addHeartbeat->setProductId(productId);
     addHeartbeat->setClientId(get_device_id());
 	addHeartbeat->setSoftwareVersion("24.11");
-	addHeartbeat->setOperatingSystem("C++ sample");
+	addHeartbeat->setOperatingSystem(get_os_name());
 
     // Create a promise and future
     auto promise = make_shared<std::promise<shared_ptr<LicenseInfoDto>>>();
@@ -181,8 +189,6 @@ Helper::send_license_heartbeat()
                     auto ex = current_exception();
 					promise->set_exception(ex);
 				} });
-
-    shared_ptr<LicenseInfoDto> licenseInfoDto;
 
     try
     {
@@ -214,6 +220,199 @@ Helper::send_license_heartbeat()
 
 	if (licenseInfoDto != nullptr) {
 	}
+
+    return 0;
+}
+
+/**
+ * unassign_token:
+ * 
+ * Unassign a token
+ * 
+ * @return 0 on success or a negative value if an error occurs.
+ */
+int
+Helper::unassign_token()
+{
+    // Check licenseInfoDto
+    if (licenseInfoDto == nullptr)
+    {
+        cout << "Error: No license info available." << endl;
+        cout << "       Please activate the license first or send a license heartbeat." << endl;
+        return -1;
+    }
+
+    shared_ptr<UnassignDto> unassignToken = make_shared<UnassignDto>();
+    unassignToken->setTokenKey(licenseInfoDto->getTokenKey());
+
+    // Create a promise and future
+    auto promise = make_shared<std::promise<string>>();
+    future<string> future = promise->get_future();
+
+    provisioningApi->unassignLicense(isvId, unassignToken)
+        .then([promise](pplx::task<string> response) mutable
+              {
+                try {
+                    promise->set_value(response.get());
+                }
+                catch (...) {
+                    auto ex = current_exception();
+                    promise->set_exception(ex);
+                } });
+
+    try
+    {        
+        cout << "unassignLicense() response: " << future.get() << endl;
+        licenseInfoDto = nullptr;
+    }
+    catch (const ApiException &e)
+    {
+        shared_ptr<istream> content = e.getContent();
+        ErrorResultObjects errorResultObjects;
+        string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
+        errorResultObjects.fromJson(web::json::value::parse(jsonStr));
+
+        cout << "unassignLicense() error ID: " << errorResultObjects.getId() << endl;
+        cout << "unassignLicense() error message: " << errorResultObjects.getMessage() << endl;
+    }
+    catch (const exception &e)
+    {
+        cout << "unassignLicense() exception: " << e.what() << '\n';
+    }
+
+    return 0;
+}
+
+/**
+ * open_session:
+ * 
+ * Open a session
+ * 
+ * @return 0 on success or a negative value if an error occurs.
+ */
+int
+Helper::open_session()
+{
+    // Check licenseInfoDto
+    if (licenseInfoDto == nullptr)
+    {
+        cout << "Error: No license info available." << endl;
+        cout << "       Please activate the license first or send a license heartbeat." << endl;
+        return -1;
+    }
+
+    shared_ptr<SessionRequestDto> sessionRequest = make_shared<SessionRequestDto>();
+    sessionRequest->setLicenseId(licenseInfoDto->getLicenseKey());
+    sessionRequest->setClientId(get_device_id());
+
+    // Create a UUID as session ID
+    boost::uuids::random_generator generator;
+    boost::uuids::uuid new_uuid = generator();
+    sessionRequest->setSessionId(to_string(new_uuid));
+
+    // Create a promise and future
+    auto promise = make_shared<std::promise<shared_ptr<SessionStatusDto>>>();
+    future<shared_ptr<SessionStatusDto>> future = promise->get_future();
+
+    provisioningApi->openSession(isvId, sessionRequest)
+        .then([promise](pplx::task<shared_ptr<SessionStatusDto>> response) mutable
+              {
+                try {
+                    promise->set_value(response.get());
+                }
+                catch (...) {
+                    auto ex = current_exception();
+                    promise->set_exception(ex);
+                } });
+
+    try
+    {
+        auto sessionStatusDto = future.get();
+        cout << "Session valid unitl: " << sessionStatusDto->getSessionValidUntil().to_string() << endl;
+        // Store in stack
+        sessionIds.push(sessionRequest->getSessionId());
+    }
+    catch (const ApiException &e)
+    {
+        shared_ptr<istream> content = e.getContent();
+        ErrorResultObjects errorResultObjects;
+        string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
+        errorResultObjects.fromJson(web::json::value::parse(jsonStr));
+
+        cout << "openSession() error ID: " << errorResultObjects.getId() << endl;
+        cout << "openSession() error message: " << errorResultObjects.getMessage() << endl;
+        return -1;
+    }
+    catch (const exception &e)
+    {
+        cout << "openSession() exception: " << e.what() << '\n';
+        return -1;
+    }
+
+    return 0;
+}
+
+int
+Helper::close_session()
+{
+    // Check licenseInfoDto
+    if (licenseInfoDto == nullptr)
+    {
+        cout << "Error: No license info available." << endl;
+        cout << "       Please activate the license first or send a license heartbeat." << endl;
+        return -1;
+    }
+
+    // Check if there is an open session
+    if (sessionIds.empty())
+    {
+        cout << "Error: No open session available." << endl;
+        cout << "       Please open a session first." << endl;
+        return -1;
+    }
+
+    shared_ptr<SessionRequestDto> sessionRequest = make_shared<SessionRequestDto>();
+    sessionRequest->setLicenseId(licenseInfoDto->getLicenseKey());
+    sessionRequest->setClientId(get_device_id());
+    sessionRequest->setSessionId(sessionIds.top());
+
+    // Create a promise and future
+    auto promise = make_shared<std::promise<string>>();
+    future<string> future = promise->get_future();
+
+    provisioningApi->closeSession(isvId, sessionRequest)
+        .then([promise](pplx::task<string> response)
+              {
+                try {
+                    promise->set_value(response.get());
+                }
+                catch (...) {
+                    auto ex = current_exception();
+                    promise->set_exception(ex);
+                } });
+
+    try
+    {
+        cout << "closeSession() response: " << future.get() << endl;
+        // Remove from stack
+        sessionIds.pop();
+    }
+    catch (const ApiException &e)
+    {
+        shared_ptr<istream> content = e.getContent();
+        ErrorResultObjects errorResultObjects;
+        string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
+        errorResultObjects.fromJson(web::json::value::parse(jsonStr));
+
+        cout << "closeSession() error ID: " << errorResultObjects.getId() << endl;
+        cout << "closeSession() error message: " << errorResultObjects.getMessage() << endl;
+        return -1;
+    }
+    catch (const exception &e)
+    {
+        cout << "closeSession() exception: " << e.what() << '\n';
+        return -1;
+    }
 
     return 0;
 }
