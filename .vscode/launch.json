@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/out/build/linux-debug/SLASCONE-demo-cpp/SLASCONE-demo-cpp",
             "args": ["${workspaceFolder}/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e_scam.xml"],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}/SLASCONE-demo-cpp",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
