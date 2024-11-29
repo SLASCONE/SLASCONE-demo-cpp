@@ -12,6 +12,6 @@ This project leverages a development container (`devcontainer`) to establish a c
 
 ## Connecting to your SLASCONE environment
 
-The application connects to the official SLASCONE environment. In order to connect to ypur environment, adjust the values XXX.
+The application connects to the official SLASCONE environment. In order to connect to your SLASCONE environment, adjust the values of Helper.cpp.
 
 
