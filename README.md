@@ -12,6 +12,6 @@ This project leverages a development container (`devcontainer`) to establish a c
 
 ## Connecting to your SLASCONE environment
 
-The application connects to the official SLASCONE environment. In order to connect to your SLASCONE environment, adjust the values of Helper.cpp.
+The application connects to the official SLASCONE environment. In order to connect to your SLASCONE environment, adjust the values of the file `Helper.cpp`.
 
 
