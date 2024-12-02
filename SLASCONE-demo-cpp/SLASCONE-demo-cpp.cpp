@@ -61,8 +61,7 @@ int main(int argc, const char *argv[])
         {
             // Read local license file
             cout << "-- Reading local license file..." << endl;
-            // Add your code here
-			cout << "Not implemented yet." << endl;
+            helper.find_temp_offline_license();
         }
         else if (input == "4")
         {
@@ -101,7 +100,7 @@ int main(int argc, const char *argv[])
         {
             // Find open session
             cout << "-- Finding open session..." << endl;
-            // Add your code here
+            helper.find_open_session();
         }
         else if (input == "10")
         {

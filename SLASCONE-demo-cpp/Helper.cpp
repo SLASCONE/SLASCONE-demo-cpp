@@ -68,15 +68,19 @@ hQIDAQAB
  */
 Helper::Helper(/* args */)
 {
+    // Build ab Api configuration and a client
 	shared_ptr<ApiConfiguration> apiConfig(new ApiConfiguration);
 	shared_ptr<ApiClient> apiClient(new ApiClient(apiConfig));
 
+    // Set URL to the API server
 	apiConfig->setBaseUrl(baseUrl);
 
+    // Set timeout to 15 seconds
     shared_ptr<http_client_config> httpConfig(new http_client_config);
     httpConfig->set_timeout(chrono::seconds(15));
-
 	apiConfig->setHttpConfig(*httpConfig);
+
+    // Set provisioning key for authentication
 	apiConfig->setApiKey(provisioningKeyHeader, provisioningKey);
 
 	apiClient->setConfiguration(apiConfig);
@@ -94,6 +98,8 @@ Helper::~Helper()
     ERR_free_strings();
 }
 
+const char* licenseInfoFileName = "licenseInfo.json";
+
 /**
  * activate_license:
  * 
@@ -101,9 +107,12 @@ Helper::~Helper()
  * 
  * @return 0 on success or a negative value if an error occurs.
  */
-int
-Helper::activate_license()
+int Helper::activate_license()
 {
+    // Reset memorized license info
+    licenseInfoDto = nullptr;
+
+    // Build the request body
     shared_ptr<ActivateClientDto> activateLicense = make_shared<ActivateClientDto>();
     activateLicense->setProductId(productId);
     activateLicense->setLicenseKey(licenseKey);
@@ -129,10 +138,12 @@ Helper::activate_license()
 
     try
     {
+        // Get the result
         licenseInfoDto = future.get();
     }
     catch (const ApiException &e)
     {
+        // Handle API errors
         shared_ptr<istream> content = e.getContent();
         ErrorResultObjects errorResultObjects;
         string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
@@ -148,11 +159,17 @@ Helper::activate_license()
 
     if (licenseInfoDto != nullptr)
     {
-        Helper::print_license(licenseInfoDto);
+        // Successfull activation
+        print_license(licenseInfoDto);
+
+        // Save the license info for temporary offline usage
+        save_model_file(licenseInfoDto, licenseInfoFileName);
     }
     else
     {
         cout << "Error: licenseInfoDto is null." << '\n';
+        remove_model_file(licenseInfoFileName);
+        return -1;
     }
 
     return 0;
@@ -165,9 +182,12 @@ Helper::activate_license()
  * 
  * @return 0 on success or a negative value if an error occurs.
  */
-int 
-Helper::send_license_heartbeat()
+int Helper::send_license_heartbeat()
 {
+    // Reset memorized license info
+    licenseInfoDto = nullptr;
+
+    // Build the request body
 	shared_ptr<AddHeartbeatDto> addHeartbeat = make_shared<AddHeartbeatDto>();
     addHeartbeat->setProductId(productId);
     addHeartbeat->setClientId(get_device_id());
@@ -196,6 +216,7 @@ Helper::send_license_heartbeat()
     }
     catch (const ApiException &e)
     {
+        // Handle API errors
         shared_ptr<istream> content = e.getContent();
         ErrorResultObjects errorResultObjects;
         string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
@@ -211,15 +232,43 @@ Helper::send_license_heartbeat()
 
     if (licenseInfoDto != nullptr)
 	{
-		Helper::print_license(licenseInfoDto);
+        // Successfull heartbeat
+		print_license(licenseInfoDto);
+
+        // Save the license info for temporary offline usage
+        save_model_file(licenseInfoDto, licenseInfoFileName);
 	}
 	else
 	{
 		cout << "Error: licenseInfoDto is null." << '\n';
+
+        remove_model_file(licenseInfoFileName);
+        return -1;
 	}
 
-	if (licenseInfoDto != nullptr) {
-	}
+    return 0;
+}
+
+/**
+ * find_temp_offline_license:
+ * 
+ * Find a temporary offline license
+ */
+int Helper::find_temp_offline_license()
+{
+    shared_ptr<LicenseInfoDto> licenseInfoDto;
+
+    if (0 <= find_model_file(licenseInfoDto, licenseInfoFileName))
+    {
+        print_license(licenseInfoDto);
+        this->licenseInfoDto = licenseInfoDto;
+    }
+    else
+    {
+        cout << "Error: No license info available." << endl;
+        cout << "       Please activate the license first or send a license heartbeat." << endl;
+        return -1;
+    }
 
     return 0;
 }
@@ -231,8 +280,7 @@ Helper::send_license_heartbeat()
  * 
  * @return 0 on success or a negative value if an error occurs.
  */
-int
-Helper::unassign_token()
+int Helper::unassign_token()
 {
     // Check licenseInfoDto
     if (licenseInfoDto == nullptr)
@@ -242,6 +290,7 @@ Helper::unassign_token()
         return -1;
     }
 
+    // Build the request body
     shared_ptr<UnassignDto> unassignToken = make_shared<UnassignDto>();
     unassignToken->setTokenKey(licenseInfoDto->getTokenKey());
 
@@ -263,10 +312,14 @@ Helper::unassign_token()
     try
     {        
         cout << "unassignLicense() response: " << future.get() << endl;
+
+        // Reset memorized license info and temporary offline license
         licenseInfoDto = nullptr;
+        remove_model_file(licenseInfoFileName);
     }
     catch (const ApiException &e)
     {
+        // Handle API errors
         shared_ptr<istream> content = e.getContent();
         ErrorResultObjects errorResultObjects;
         string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
@@ -283,6 +336,8 @@ Helper::unassign_token()
     return 0;
 }
 
+const char* sessionStatusFileName = "sessionStatus.json";
+
 /**
  * open_session:
  * 
@@ -290,8 +345,7 @@ Helper::unassign_token()
  * 
  * @return 0 on success or a negative value if an error occurs.
  */
-int
-Helper::open_session()
+int Helper::open_session()
 {
     // Check licenseInfoDto
     if (licenseInfoDto == nullptr)
@@ -301,6 +355,7 @@ Helper::open_session()
         return -1;
     }
 
+    // Build the request body
     shared_ptr<SessionRequestDto> sessionRequest = make_shared<SessionRequestDto>();
     sessionRequest->setLicenseId(licenseInfoDto->getLicenseKey());
     sessionRequest->setClientId(get_device_id());
@@ -331,9 +386,13 @@ Helper::open_session()
         cout << "Session valid unitl: " << sessionStatusDto->getSessionValidUntil().to_string() << endl;
         // Store in stack
         sessionIds.push(sessionRequest->getSessionId());
+
+        // Save the session status for temporary offline usage
+        save_model_file(sessionStatusDto, sessionStatusFileName);
     }
     catch (const ApiException &e)
     {
+        // Handle API errors
         shared_ptr<istream> content = e.getContent();
         ErrorResultObjects errorResultObjects;
         string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
@@ -352,8 +411,49 @@ Helper::open_session()
     return 0;
 }
 
-int
-Helper::close_session()
+/**
+ * find_open_session:
+ * 
+ * Find an open session
+ * 
+ * @return 0 on success or a negative value if an error occurs.
+ */
+int Helper::find_open_session()
+{
+    shared_ptr<SessionStatusDto> sessionStatusDto;
+
+    if (0 <= find_model_file(sessionStatusDto, sessionStatusFileName))
+    {
+        // Check the 'sessionValidUntil' timestamp if the session is still valid
+        if (utility::datetime::utc_now() <= sessionStatusDto->getSessionValidUntil())
+        {
+           cout << "Found open session; session valid unitl: " << sessionStatusDto->getSessionValidUntil().to_string() << endl;
+        }
+        else
+        {
+            cout << "Error: Session is expired." << endl;
+            cout << "       Please open a new session." << endl;
+            return -1;
+        }
+    }
+    else
+    {
+        cout << "Error: No session status available." << endl;
+        cout << "       Please open a session first." << endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * close_session:
+ * 
+ * Close a session
+ * 
+ * @return 0 on success or a negative value if an error occurs.
+ */
+int Helper::close_session()
 {
     // Check licenseInfoDto
     if (licenseInfoDto == nullptr)
@@ -371,6 +471,7 @@ Helper::close_session()
         return -1;
     }
 
+    // Build the request body
     shared_ptr<SessionRequestDto> sessionRequest = make_shared<SessionRequestDto>();
     sessionRequest->setLicenseId(licenseInfoDto->getLicenseKey());
     sessionRequest->setClientId(get_device_id());
@@ -396,9 +497,13 @@ Helper::close_session()
         cout << "closeSession() response: " << future.get() << endl;
         // Remove from stack
         sessionIds.pop();
+
+        // Remove the session status file
+        remove_model_file(sessionStatusFileName);
     }
     catch (const ApiException &e)
     {
+        // Handle API errors
         shared_ptr<istream> content = e.getContent();
         ErrorResultObjects errorResultObjects;
         string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
@@ -457,8 +562,7 @@ int Helper::get_license_by_id()
  *
  * Returns 0 on success or a negative value if an error occurs.
  */
-int
-Helper::verify_file(const char* xml_file) {
+int Helper::verify_file(const char* xml_file) {
     LicenseXmlValidator::LicenseXmlValidator validator;
     return validator.verify_file(xml_file, pemKey.c_str(), pemKey.length());
 }
@@ -477,8 +581,7 @@ int Helper::print_license_infos(const char* xml_file)
  * 
  * @return the operating system name or an empty string if an error occurs.
  */
-string
-Helper::get_os_name()
+string Helper::get_os_name()
 {
     #if defined(_WIN32) || defined(_WIN64)
         return "Windows";
@@ -514,10 +617,10 @@ Helper::get_os_name()
  * 
  * Note: The device ID is the HOSTNAME environment variable.
  */
-string 
-Helper::get_device_id()
+string Helper::get_device_id()
 {
     // Read HOSTNAME environment variable
+    // (contains the container ID if running in a container)
     const char* hostname = getenv("HOSTNAME");
     if (hostname == nullptr)
     {
@@ -528,8 +631,7 @@ Helper::get_device_id()
     return hostname;
 }
 
-int 
-Helper::print_license(shared_ptr<LicenseDto> licenseDto)
+int Helper::print_license(shared_ptr<LicenseDto> licenseDto)
 {
     if (licenseDto != nullptr)
     {
@@ -568,8 +670,7 @@ Helper::print_license(shared_ptr<LicenseDto> licenseDto)
     return -1;
 }
 
-int 
-Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
+int Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
 {
     if (licenseInfoDto != nullptr)
     {
@@ -614,4 +715,121 @@ Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
     }
 
     return -1;
+}
+
+/**
+ * save_model_file:
+ * 
+ * Save the model in a file in the home directory of the user
+ * 
+ * @return 0 on success or a negative value if an error occurs.
+ * 
+ * Note: 
+ * The model object is a shared pointer to a ModelBase derived object.
+ * The file is saved in JSON format.
+ */
+template<typename T>
+int Helper::save_model_file(shared_ptr<T> model, const char* file_name)
+{
+    // Find or create a 'Slascone' directory in the home directory of the user
+    string homeDir = getenv("HOME");
+    string slasconeDir = homeDir + "/Slascone";
+    if (mkdir(slasconeDir.c_str(), 0777) == -1)
+    {
+        if (errno != EEXIST)
+        {
+            cout << "Error: Unable to create Slascone directory." << '\n';
+            return -1;
+        }
+    }
+
+    // Store the model in a file in the home directory of the user
+    ofstream modelFile(slasconeDir + "/" + file_name);
+    if (modelFile.is_open())
+    {
+        modelFile << model->toJson().serialize();
+        modelFile.close();
+    }
+    else
+    {
+        cout << "Error: Unable to open " << file_name << " file." << '\n';
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * find_model_file:
+ * 
+ * Find model from a file in the home directory of the user
+ * 
+ * @model:     the model object
+ * 
+ * @return 0 on success or a negative value if an error occurs.
+ * 
+ * Note: The model object is a shared pointer to a ModelBase derived object.
+ */
+template<typename T>
+int Helper::find_model_file(shared_ptr<T>& model, const char* file_name)
+{
+    // Find or create a 'Slascone' directory in the home directory of the user
+    string homeDir = getenv("HOME");
+    string slasconeDir = homeDir + "/Slascone";
+    if (mkdir(slasconeDir.c_str(), 0777) == -1)
+    {
+        if (errno != EEXIST)
+        {
+            cout << "Error: Unable to create Slascone directory." << '\n';
+            return -1;
+        }
+    }
+
+    // Read the model from a file in the home directory of the user
+    ifstream modelFile(slasconeDir + "/" + file_name);
+    if (modelFile.is_open())
+    {
+        string jsonStr((istreambuf_iterator<char>(modelFile)), istreambuf_iterator<char>());
+        model = make_shared<T>();
+        model->fromJson(web::json::value::parse(jsonStr));
+        modelFile.close();
+    }
+    else
+    {
+        cout << "Error: Unable to open licenseInfo.json file." << '\n';
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * remove_model_file:
+ * 
+ * Remove the file in the home directory of the user
+ * 
+ * @return 0 on success or a negative value if an error occurs.
+ */
+int Helper::remove_model_file(const char* file_name)
+{
+    // Find or create a 'Slascone' directory in the home directory of the user
+    string homeDir = getenv("HOME");
+    string slasconeDir = homeDir + "/Slascone";
+    if (mkdir(slasconeDir.c_str(), 0777) == -1)
+    {
+        if (errno != EEXIST)
+        {
+            cout << "Error: Unable to create Slascone directory." << '\n';
+            return -1;
+        }
+    }
+
+    // Remove the license info file in the home directory of the user
+    if (remove((slasconeDir + "/" + file_name).c_str()) != 0)
+    {
+        cout << "Error: Unable to remove " << file_name << " file." << '\n';
+        return -1;
+    }
+
+    return 0;
 }

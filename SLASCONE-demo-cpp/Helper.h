@@ -33,8 +33,10 @@ namespace SLASCONE_demo_cpp
 
         int activate_license();
         int send_license_heartbeat();
+        int find_temp_offline_license();
         int unassign_token();
         int open_session();
+        int find_open_session();
         int close_session();
 
         int get_license_by_id();
@@ -46,5 +48,10 @@ namespace SLASCONE_demo_cpp
     protected:
         int print_license(shared_ptr<LicenseDto> licenseDto);
         int print_license(shared_ptr<LicenseInfoDto> licenseInfoDto);
+        template<typename T>
+        int save_model_file(shared_ptr<T> model, const char* file_name);
+        template<typename T>
+        int find_model_file(shared_ptr<T>& model, const char* file_name);
+        int remove_model_file(const char* file_name);
     };
 }
