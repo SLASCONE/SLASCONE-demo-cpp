@@ -74,22 +74,19 @@ int main(int argc, const char *argv[])
         {
             // Add analytical heartbeat
             cout << "-- Adding analytical heartbeat..." << endl;
-            // Add your code here
-			cout << "Not implemented yet." << endl;
+            helper.send_analytical_heartbeat();
         }
         else if (input == "6")
         {
             // Add usage heart beat
             cout << "-- Adding usage heartbeat..." << endl;
-            // Add your code here
-			cout << "Not implemented yet." << endl;
+            helper.send_usage_heartbeat();
         }
         else if (input == "7")
         {
             // Add consumption heartbeat
             cout << "-- Adding consumption heartbeat..." << endl;
-            // Add your code here
-			cout << "Not implemented yet." << endl;
+            helper.send_consumption_heartbeat();
         }
         else if (input == "8")
         {
