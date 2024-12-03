@@ -4,9 +4,6 @@
 #include <fstream>
 #include <string>
 #include <stack>
-#include <openssl/pem.h>
-#include <openssl/x509.h>
-#include <openssl/err.h>
 #include <SlasconeOpenApiClient/ApiClient.h>
 #include <SlasconeOpenApiClient/api/ProvisioningApi.h>
 
@@ -41,7 +38,6 @@ namespace SLASCONE_demo_cpp
 
         int get_license_by_id();
         int verify_file(const char *xml_file);
-		int print_license_infos(const char* xml_file);
         string get_os_name();
         string get_device_id();
 

@@ -5,21 +5,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <openssl/pem.h>
-#include <openssl/x509.h>
-#include <openssl/err.h>
-#include <openssl/rsa.h>
-#include <openssl/sha.h>
-#include <openssl/evp.h>
-#include <xmlsec/xmlsec.h>
-#include <xmlsec/xmltree.h>
-#include <xmlsec/xmldsig.h>
-#include <xmlsec/app.h>
-#include <xmlsec/openssl/app.h>
-#include <xmlsec/crypto.h>
-#include <xmlsec/errors.h>
-#include <SlasconeOpenApiClient/ApiClient.h>
-#include <SlasconeOpenApiClient/api/ProvisioningApi.h>
 #include "LicenseXmlValidator/LicenseXmlValidator.h"
 
 using namespace std;
@@ -154,7 +139,7 @@ int Helper::activate_license()
     }
     catch (const exception &e)
     {
-        cout << "activateLicense() exception: " << e.what() << '\n';
+        cout << "activateLicense() exception: " << e.what() << endl;
     }
 
     if (licenseInfoDto != nullptr)
@@ -167,7 +152,7 @@ int Helper::activate_license()
     }
     else
     {
-        cout << "Error: licenseInfoDto is null." << '\n';
+        cout << "Error: licenseInfoDto is null." << endl;
         remove_model_file(licenseInfoFileName);
         return -1;
     }
@@ -227,7 +212,7 @@ int Helper::send_license_heartbeat()
     }
     catch (const exception &e)
     {
-        cout << "addHeartbeat() exception: " << e.what() << '\n';
+        cout << "addHeartbeat() exception: " << e.what() << endl;
     }
 
     if (licenseInfoDto != nullptr)
@@ -240,7 +225,7 @@ int Helper::send_license_heartbeat()
 	}
 	else
 	{
-		cout << "Error: licenseInfoDto is null." << '\n';
+		cout << "Error: licenseInfoDto is null." << endl;
 
         remove_model_file(licenseInfoFileName);
         return -1;
@@ -330,7 +315,7 @@ int Helper::unassign_token()
     }
     catch (const exception &e)
     {
-        cout << "unassignLicense() exception: " << e.what() << '\n';
+        cout << "unassignLicense() exception: " << e.what() << endl;
     }
 
     return 0;
@@ -404,7 +389,7 @@ int Helper::open_session()
     }
     catch (const exception &e)
     {
-        cout << "openSession() exception: " << e.what() << '\n';
+        cout << "openSession() exception: " << e.what() << endl;
         return -1;
     }
 
@@ -515,7 +500,7 @@ int Helper::close_session()
     }
     catch (const exception &e)
     {
-        cout << "closeSession() exception: " << e.what() << '\n';
+        cout << "closeSession() exception: " << e.what() << endl;
         return -1;
     }
 
@@ -547,7 +532,7 @@ int Helper::get_license_by_id()
 						}
 					}
 					catch (const exception& e) {
-						cout << "getLicensesByLicenseKeyAsync() exception: " << e.what() << '\n';
+						cout << "getLicensesByLicenseKeyAsync() exception: " << e.what() << endl;
 					} })
         .wait();
 
@@ -565,13 +550,6 @@ int Helper::get_license_by_id()
 int Helper::verify_file(const char* xml_file) {
     LicenseXmlValidator::LicenseXmlValidator validator;
     return validator.verify_file(xml_file, pemKey.c_str(), pemKey.length());
-}
-
-int Helper::print_license_infos(const char* xml_file)
-{
-    // Read and deserialize the license XML file using libxml2
-        
-    return 0;
 }
 
 /**
@@ -592,7 +570,7 @@ string Helper::get_os_name()
         FILE* pipe = popen(command.c_str(), "r");
         if (pipe == nullptr)
         {
-            cout << "Error: popen() failed." << '\n';
+            cout << "Error: popen() failed." << endl;
             return "";
         }
         string os_name = fgets(buffer, 128, pipe);
@@ -624,7 +602,7 @@ string Helper::get_device_id()
     const char* hostname = getenv("HOSTNAME");
     if (hostname == nullptr)
     {
-        cout << "Error: HOSTNAME environment variable not set." << '\n';
+        cout << "Error: HOSTNAME environment variable not set." << endl;
         return "";
     }
 
@@ -635,34 +613,49 @@ int Helper::print_license(shared_ptr<LicenseDto> licenseDto)
 {
     if (licenseDto != nullptr)
     {
-        cout << "License key: " << to_utf8string(licenseDto->getId()) << '\n';
-        cout << "Legacy license key: " << to_utf8string(licenseDto->getLegacyLicenseKey()) << '\n';
-        cout << "License name: " << to_utf8string(licenseDto->getName()) << '\n';
-        cout << "Product name: " << to_utf8string(licenseDto->getProductId()) << '\n';
-        cout << "License valid: " << licenseDto->isIsValid() << '\n';
-        cout << "Expiration date: " << to_utf8string(licenseDto->getExpirationDateUtc().to_string()) << '\n';
+        cout << "License key: " << to_utf8string(licenseDto->getId()) << endl;
+        cout << "Legacy license key: " << to_utf8string(licenseDto->getLegacyLicenseKey()) << endl;
+        cout << "License name: " << to_utf8string(licenseDto->getName()) << endl;
+        cout << "Product name: " << to_utf8string(licenseDto->getProductId()) << endl;
+        cout << "License valid: " << licenseDto->isIsValid() << endl;
+        cout << "Expiration date: " << to_utf8string(licenseDto->getExpirationDateUtc().to_string()) << endl;
+        cout << "Customer company name: " << to_utf8string(licenseDto->getCustomer()->getCompanyName()) << endl;
+        cout << "Customer number: " << to_utf8string(licenseDto->getCustomer()->getCustomerNumber()) << endl;
 
         auto features = licenseDto->getLicenseFeatures();
         for (auto feature : features)
         {
-            cout << " - Feature name: " << to_utf8string(feature->getFeatureName()) << '\n';
-            cout << "   Feature description: " << to_utf8string(feature->getFeatureDescription()) << '\n';
+            cout << " - Feature name: " << to_utf8string(feature->getFeatureName()) << endl;
+            cout << "   Feature description: " << to_utf8string(feature->getFeatureDescription()) << endl;
         }
 
         auto limitations = licenseDto->getLicenseLimitations();
         for (auto limitation : limitations)
         {
-            cout << " - Limitation name: " << to_utf8string(limitation->getLimitationName()) << '\n';
-            cout << "   Limitation description: " << to_utf8string(limitation->getLimitationDescription()) << '\n';
-            cout << "   Limitation value: " << limitation->getLimit() << '\n';
+            cout << " - Limitation name: " << to_utf8string(limitation->getLimitationName()) << endl;
+            cout << "   Limitation description: " << to_utf8string(limitation->getLimitationDescription()) << endl;
+            cout << "   Limitation value: " << limitation->getLimit() << endl;
+        }
+
+        auto constrainedVariables = licenseDto->getLicenseConstrainedVariables();
+        for (auto constrainedVariable : constrainedVariables)
+        {
+            cout << " - Constrained variable name: " << to_utf8string(constrainedVariable->getVariableName()) << endl;
+            cout << "   Constrained variable description: " << to_utf8string(constrainedVariable->getVariableDescription()) << endl;
+            cout << "   Constrained variable value: ";            
+            for (auto value : constrainedVariable->getValues())
+            {
+                cout << to_utf8string(value);
+            }
+            cout << endl;
         }
 
         auto variables = licenseDto->getLicenseVariables();
         for (auto variable : variables)
         {
-            cout << " - Variable name: " << to_utf8string(variable->getVariableName()) << '\n';
-            cout << "   Variable description: " << to_utf8string(variable->getVariableDescription()) << '\n';
-            cout << "   Variable value: " << to_utf8string(variable->getValue()) << '\n';
+            cout << " - Variable name: " << to_utf8string(variable->getVariableName()) << endl;
+            cout << "   Variable description: " << to_utf8string(variable->getVariableDescription()) << endl;
+            cout << "   Variable value: " << to_utf8string(variable->getValue()) << endl;
         }
         return 0;
     }
@@ -674,41 +667,57 @@ int Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
 {
     if (licenseInfoDto != nullptr)
     {
-        cout << "License key: " << to_utf8string(licenseInfoDto->getLicenseKey()) << '\n';
-        cout << "Legacy license key: " << to_utf8string(licenseInfoDto->getLegacyLicenseKey()) << '\n';
-        cout << "Token key: " << to_utf8string(licenseInfoDto->getTokenKey()) << '\n';
-        cout << "License name: " << to_utf8string(licenseInfoDto->getLicenseName()) << '\n';
-        cout << "Product name: " << to_utf8string(licenseInfoDto->getProductName()) << '\n';
-        cout << "Template name: " << to_utf8string(licenseInfoDto->getTemplateName()) << '\n';
-        cout << "License valid: " << licenseInfoDto->isIsLicenseValid() << '\n';
-        cout << "Expiration date: " << to_utf8string(licenseInfoDto->getExpirationDateUtc().to_string()) << '\n';
-
+        cout << "License key: " << to_utf8string(licenseInfoDto->getLicenseKey()) << endl;
+        cout << "Legacy license key: " << to_utf8string(licenseInfoDto->getLegacyLicenseKey()) << endl;
+        cout << "Token key: " << to_utf8string(licenseInfoDto->getTokenKey()) << endl;
+        cout << "License name: " << to_utf8string(licenseInfoDto->getLicenseName()) << endl;
+        cout << "Product name: " << to_utf8string(licenseInfoDto->getProductName()) << endl;
+        cout << "Template name: " << to_utf8string(licenseInfoDto->getTemplateName()) << endl;
+        cout << "License valid: " << licenseInfoDto->isIsLicenseValid() << endl;
+        cout << "Expiration date: " << to_utf8string(licenseInfoDto->getExpirationDateUtc().to_string()) << endl;
 
         auto customer = licenseInfoDto->getCustomer();
-        cout << "Customer company name: " << to_utf8string(customer->getCompanyName()) << '\n';
-        cout << "Customer number: " << to_utf8string(customer->getCustomerNumber()) << '\n';
+        cout << "Customer company name: " << to_utf8string(customer->getCompanyName()) << endl;
+        cout << "Customer number: " << to_utf8string(customer->getCustomerNumber()) << endl;
+
+        cout << "Session period: " << licenseInfoDto->getSessionPeriod() << endl;
+        cout << "Heartbeat period: " << licenseInfoDto->getHeartbeatPeriod() << endl;
+        cout << "Freeride: " << licenseInfoDto->getFreeride() << endl;
 
         auto features = licenseInfoDto->getFeatures();
         for (auto feature : features)
         {
-            cout << " - Feature name: " << to_utf8string(feature->getName()) << '\n';
-            cout << "   Feature description: " << to_utf8string(feature->getDescription()) << '\n';
+            cout << " - Feature name: " << to_utf8string(feature->getName()) << endl;
+            cout << "   Feature description: " << to_utf8string(feature->getDescription()) << endl;
         }
 
         auto limitations = licenseInfoDto->getLimitations();
         for (auto limitation : limitations)
         {
-            cout << " - Limitation name: " << to_utf8string(limitation->getName()) << '\n';
-            cout << "   Limitation description: " << to_utf8string(limitation->getDescription()) << '\n';
-            cout << "   Limitation value: " << limitation->getValue() << '\n';
+            cout << " - Limitation name: " << to_utf8string(limitation->getName()) << endl;
+            cout << "   Limitation description: " << to_utf8string(limitation->getDescription()) << endl;
+            cout << "   Limitation value: " << limitation->getValue() << endl;
+        }
+
+        auto constrainedVariables = licenseInfoDto->getConstrainedVariables();
+        for (auto constrainedVariable : constrainedVariables)
+        {
+            cout << " - Constrained variable name: " << to_utf8string(constrainedVariable->getName()) << endl;
+            cout << "   Constrained variable description: " << to_utf8string(constrainedVariable->getDescription()) << endl;
+            cout << "   Constrained variable value: ";            
+            for (auto value : constrainedVariable->getValue())
+            {
+                cout << to_utf8string(value);
+            }
+            cout << endl;
         }
 
         auto variables = licenseInfoDto->getVariables();
         for (auto variable : variables)
         {
-            cout << " - Variable name: " << to_utf8string(variable->getName()) << '\n';
-            cout << "   Variable description: " << to_utf8string(variable->getDescription()) << '\n';
-            cout << "   Variable value: " << to_utf8string(variable->getValue()) << '\n';
+            cout << " - Variable name: " << to_utf8string(variable->getName()) << endl;
+            cout << "   Variable description: " << to_utf8string(variable->getDescription()) << endl;
+            cout << "   Variable value: " << to_utf8string(variable->getValue()) << endl;
         }
 
         return 0;
@@ -738,7 +747,7 @@ int Helper::save_model_file(shared_ptr<T> model, const char* file_name)
     {
         if (errno != EEXIST)
         {
-            cout << "Error: Unable to create Slascone directory." << '\n';
+            cout << "Error: Unable to create Slascone directory." << endl;
             return -1;
         }
     }
@@ -752,7 +761,7 @@ int Helper::save_model_file(shared_ptr<T> model, const char* file_name)
     }
     else
     {
-        cout << "Error: Unable to open " << file_name << " file." << '\n';
+        cout << "Error: Unable to open " << file_name << " file." << endl;
         return -1;
     }
 
@@ -780,7 +789,7 @@ int Helper::find_model_file(shared_ptr<T>& model, const char* file_name)
     {
         if (errno != EEXIST)
         {
-            cout << "Error: Unable to create Slascone directory." << '\n';
+            cout << "Error: Unable to create Slascone directory." << endl;
             return -1;
         }
     }
@@ -796,7 +805,7 @@ int Helper::find_model_file(shared_ptr<T>& model, const char* file_name)
     }
     else
     {
-        cout << "Error: Unable to open licenseInfo.json file." << '\n';
+        cout << "Error: Unable to open licenseInfo.json file." << endl;
         return -1;
     }
 
@@ -819,7 +828,7 @@ int Helper::remove_model_file(const char* file_name)
     {
         if (errno != EEXIST)
         {
-            cout << "Error: Unable to create Slascone directory." << '\n';
+            cout << "Error: Unable to create Slascone directory." << endl;
             return -1;
         }
     }
@@ -827,7 +836,7 @@ int Helper::remove_model_file(const char* file_name)
     // Remove the license info file in the home directory of the user
     if (remove((slasconeDir + "/" + file_name).c_str()) != 0)
     {
-        cout << "Error: Unable to remove " << file_name << " file." << '\n';
+        cout << "Error: Unable to remove " << file_name << " file." << endl;
         return -1;
     }
 
