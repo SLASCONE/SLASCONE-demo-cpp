@@ -53,10 +53,9 @@ hQIDAQAB
  */
 Helper::Helper(/* args */)
 {
-    // Build ab Api configuration and a client
+    // Build an Api configuration
 	shared_ptr<ApiConfiguration> apiConfig(new ApiConfiguration);
-	shared_ptr<ApiClient> apiClient(new ApiClient(apiConfig));
-
+    
     // Set URL to the API server
 	apiConfig->setBaseUrl(baseUrl);
 
@@ -68,12 +67,13 @@ Helper::Helper(/* args */)
     // Set provisioning key for authentication
 	apiConfig->setApiKey(provisioningKeyHeader, provisioningKey);
 
-	apiClient->setConfiguration(apiConfig);
+    // Build the SLACONE client
+    apiClient = make_shared<SlasconeApiClient>(pemKey.c_str(), apiConfig);
 
-    // Create a data gathering API instance
+    // Create the data gathering API instance
     dataGatheringApi = make_unique<DataGatheringApi>(apiClient);
 
-    // Create a provisioning API instance
+    // Create the provisioning API instance
     provisioningApi = make_unique<ProvisioningApi>(apiClient);
 }
 
@@ -143,14 +143,10 @@ int Helper::activate_license()
     {
         // Successfull activation
         print_license(licenseInfoDto);
-
-        // Save the license info for temporary offline usage
-        save_model_file(licenseInfoDto, licenseInfoFileName);
     }
     else
     {
         cout << "Error: licenseInfoDto is null." << endl;
-        remove_model_file(licenseInfoFileName);
         return -1;
     }
 
@@ -210,15 +206,10 @@ int Helper::send_license_heartbeat()
 	{
         // Successfull heartbeat
 		print_license(licenseInfoDto);
-
-        // Save the license info for temporary offline usage
-        save_model_file(licenseInfoDto, licenseInfoFileName);
 	}
 	else
 	{
 		cout << "Error: licenseInfoDto is null." << endl;
-
-        remove_model_file(licenseInfoFileName);
         return -1;
 	}
 
@@ -232,9 +223,9 @@ int Helper::send_license_heartbeat()
  */
 int Helper::find_temp_offline_license()
 {
-    shared_ptr<LicenseInfoDto> licenseInfoDto;
+    shared_ptr<LicenseInfoDto> licenseInfoDto = std::make_shared<LicenseInfoDto>();
 
-    if (0 <= find_model_file(licenseInfoDto, licenseInfoFileName))
+    if (0 == apiClient->TryGetLicenseInfo(licenseInfoDto))
     {
         print_license(licenseInfoDto);
         this->licenseInfoDto = licenseInfoDto;
@@ -291,7 +282,6 @@ int Helper::unassign_token()
 
         // Reset memorized license info and temporary offline license
         licenseInfoDto = nullptr;
-        remove_model_file(licenseInfoFileName);
     }
     catch (const ApiException &e)
     {
@@ -535,9 +525,6 @@ int Helper::open_session()
         cout << "Session valid unitl: " << sessionStatusDto->getSessionValidUntil().to_string() << endl;
         // Store in stack
         sessionIds.push(sessionRequest->getSessionId());
-
-        // Save the session status for temporary offline usage
-        save_model_file(sessionStatusDto, sessionStatusFileName);
     }
     catch (const ApiException &e)
     {
@@ -563,14 +550,17 @@ int Helper::open_session()
  */
 int Helper::find_open_session()
 {
-    shared_ptr<SessionStatusDto> sessionStatusDto;
+    shared_ptr<SessionRequestDto> sessionRequestDto = make_shared<SessionRequestDto>();
+    shared_ptr<SessionStatusDto> sessionStatusDto = make_shared<SessionStatusDto>();
 
-    if (0 <= find_model_file(sessionStatusDto, sessionStatusFileName))
+    if (0 <= apiClient->TryGetOpenSession(sessionRequestDto, sessionStatusDto))
     {
         // Check the 'sessionValidUntil' timestamp if the session is still valid
         if (utility::datetime::utc_now() <= sessionStatusDto->getSessionValidUntil())
         {
-           cout << "Found open session; session valid unitl: " << sessionStatusDto->getSessionValidUntil().to_string() << endl;
+           cout << "Found open session; session ID: " << sessionRequestDto->getSessionId() << endl;
+           cout << "                    client ID: " << sessionRequestDto->getClientId() << endl;
+           cout << "                    session valid unitl: " << sessionStatusDto->getSessionValidUntil().to_string() << endl;
         }
         else
         {
@@ -640,9 +630,6 @@ int Helper::close_session()
         cout << "closeSession() response: " << future.get() << endl;
         // Remove from stack
         sessionIds.pop();
-
-        // Remove the session status file
-        remove_model_file(sessionStatusFileName);
     }
     catch (const ApiException &e)
     {
@@ -896,121 +883,4 @@ int Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
     }
 
     return -1;
-}
-
-/**
- * save_model_file:
- * 
- * Save the model in a file in the home directory of the user
- * 
- * @return 0 on success or a negative value if an error occurs.
- * 
- * Note: 
- * The model object is a shared pointer to a ModelBase derived object.
- * The file is saved in JSON format.
- */
-template<typename T>
-int Helper::save_model_file(shared_ptr<T> model, const char* file_name)
-{
-    // Find or create a 'Slascone' directory in the home directory of the user
-    string homeDir = getenv("HOME");
-    string slasconeDir = homeDir + "/Slascone";
-    if (mkdir(slasconeDir.c_str(), 0777) == -1)
-    {
-        if (errno != EEXIST)
-        {
-            cout << "Error: Unable to create Slascone directory." << endl;
-            return -1;
-        }
-    }
-
-    // Store the model in a file in the home directory of the user
-    ofstream modelFile(slasconeDir + "/" + file_name);
-    if (modelFile.is_open())
-    {
-        modelFile << model->toJson().serialize();
-        modelFile.close();
-    }
-    else
-    {
-        cout << "Error: Unable to open " << file_name << " file." << endl;
-        return -1;
-    }
-
-    return 0;
-}
-
-/**
- * find_model_file:
- * 
- * Find model from a file in the home directory of the user
- * 
- * @model:     the model object
- * 
- * @return 0 on success or a negative value if an error occurs.
- * 
- * Note: The model object is a shared pointer to a ModelBase derived object.
- */
-template<typename T>
-int Helper::find_model_file(shared_ptr<T>& model, const char* file_name)
-{
-    // Find or create a 'Slascone' directory in the home directory of the user
-    string homeDir = getenv("HOME");
-    string slasconeDir = homeDir + "/Slascone";
-    if (mkdir(slasconeDir.c_str(), 0777) == -1)
-    {
-        if (errno != EEXIST)
-        {
-            cout << "Error: Unable to create Slascone directory." << endl;
-            return -1;
-        }
-    }
-
-    // Read the model from a file in the home directory of the user
-    ifstream modelFile(slasconeDir + "/" + file_name);
-    if (modelFile.is_open())
-    {
-        string jsonStr((istreambuf_iterator<char>(modelFile)), istreambuf_iterator<char>());
-        model = make_shared<T>();
-        model->fromJson(web::json::value::parse(jsonStr));
-        modelFile.close();
-    }
-    else
-    {
-        cout << "Error: Unable to open licenseInfo.json file." << endl;
-        return -1;
-    }
-
-    return 0;
-}
-
-/**
- * remove_model_file:
- * 
- * Remove the file in the home directory of the user
- * 
- * @return 0 on success or a negative value if an error occurs.
- */
-int Helper::remove_model_file(const char* file_name)
-{
-    // Find or create a 'Slascone' directory in the home directory of the user
-    string homeDir = getenv("HOME");
-    string slasconeDir = homeDir + "/Slascone";
-    if (mkdir(slasconeDir.c_str(), 0777) == -1)
-    {
-        if (errno != EEXIST)
-        {
-            cout << "Error: Unable to create Slascone directory." << endl;
-            return -1;
-        }
-    }
-
-    // Remove the license info file in the home directory of the user
-    if (remove((slasconeDir + "/" + file_name).c_str()) != 0)
-    {
-        cout << "Error: Unable to remove " << file_name << " file." << endl;
-        return -1;
-    }
-
-    return 0;
 }
