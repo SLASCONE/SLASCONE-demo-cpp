@@ -81,6 +81,17 @@ pplx::task<web::http::http_response> SlasconeApiClient::callApi(
 				auto utf8Path = utility::conversions::to_utf8string(path);
 				auto licenseInfoMustBeStored = method == U("POST") && std::regex_match(utf8Path, std::regex("/api/v2/isv/[^/]+/provisioning/(activations|heartbeats)"));
 				auto sessionStatusMustBeStored = method == U("POST") && std::regex_match(utf8Path, std::regex("/api/v2/isv/[^/]+/provisioning/session/open"));
+				
+				// Delete session status file if the session is closed
+				auto sessionStatusMustBeDeleted = method == U("POST") && std::regex_match(utf8Path, std::regex("/api/v2/isv/[^/]+/provisioning/session/close"));
+				if (sessionStatusMustBeDeleted)
+				{
+					std::filesystem::path slasconeDir;
+					if (0 == findOrCreateSlasconeFolder(slasconeDir))
+					{
+						std::filesystem::remove(slasconeDir / offlineSessionFileName);
+					}
+				}				
 
 				if (!signatureHeaderMustBeValidated && !licenseInfoMustBeStored && !sessionStatusMustBeStored)
 				{
