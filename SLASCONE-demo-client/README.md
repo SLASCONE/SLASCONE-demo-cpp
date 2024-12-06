@@ -42,8 +42,23 @@ You can provide a `config.json` file to configure the generator. To generate the
 }
 ```
 
+Due to an issue in the generator you have to do some slightly modifications to the `swagger.json` file to get compilable code from the generator.
+You have to modify all occurencies of `oneOf`.
 
-with some slightly modifications. 
+Example: You have to change this
+```
+"oneOf": [
+    {
+    "$ref": "#/components/schemas/TemplateDto"
+    }
+]
+```
+
+to this
+```
+    "$ref": "#/components/schemas/TemplateDto"
+```
+
 You can download the OpenAPI document from https://api365.slascone.com/swagger/v2/swagger.json
 
 ### Build
