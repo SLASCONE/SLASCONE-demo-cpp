@@ -4,6 +4,7 @@
 #include <iostream>
 #include "SLASCONE-demo-cpp.h"
 #include "Helper.h"
+#include "LicenseXmlHelper.h"
 
 using namespace std;
 using namespace SLASCONE_demo_cpp;
@@ -61,8 +62,7 @@ int main(int argc, const char *argv[])
         {
             // Read local license file
             cout << "-- Reading local license file..." << endl;
-            // Add your code here
-			cout << "Not implemented yet." << endl;
+            helper.find_temp_offline_license();
         }
         else if (input == "4")
         {
@@ -74,22 +74,19 @@ int main(int argc, const char *argv[])
         {
             // Add analytical heartbeat
             cout << "-- Adding analytical heartbeat..." << endl;
-            // Add your code here
-			cout << "Not implemented yet." << endl;
+            helper.send_analytical_heartbeat();
         }
         else if (input == "6")
         {
             // Add usage heart beat
             cout << "-- Adding usage heartbeat..." << endl;
-            // Add your code here
-			cout << "Not implemented yet." << endl;
+            helper.send_usage_heartbeat();
         }
         else if (input == "7")
         {
             // Add consumption heartbeat
             cout << "-- Adding consumption heartbeat..." << endl;
-            // Add your code here
-			cout << "Not implemented yet." << endl;
+            helper.send_consumption_heartbeat();
         }
         else if (input == "8")
         {
@@ -101,7 +98,7 @@ int main(int argc, const char *argv[])
         {
             // Find open session
             cout << "-- Finding open session..." << endl;
-            // Add your code here
+            helper.find_open_session();
         }
         else if (input == "10")
         {
@@ -125,7 +122,7 @@ int main(int argc, const char *argv[])
         {
             // Read license file
             cout << "Reading license file..." << endl;
-			helper.print_license_infos("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e.xml");
+			LicenseXmlHelper::print_license_infos("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e.xml");
         }
     }
     return 0;

@@ -68,7 +68,7 @@ public:
     template<class T>
     static utility::string_t parameterToString(const std::shared_ptr<T>& value);
 
-    pplx::task<web::http::http_response> callApi(
+    virtual pplx::task<web::http::http_response> callApi(
         const utility::string_t& path,
         const utility::string_t& method,
         const std::map<utility::string_t, utility::string_t>& queryParams,
