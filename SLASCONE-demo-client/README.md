@@ -27,7 +27,7 @@ If not you have to install it by yourself:
 
 ### Generate the sources
 
-An easy way to generate the client is running the OpenAPI Generator from a docker container. The command could look like this: (Don't forget to replace your local project path)
+An easy way to generate the client is running the OpenAPI Generator from a docker container. The command could look like this: (Don't forget to replace your local project path):
 
 ```
 docker run --rm -v "<local project root>:/local" openapitools/openapi-generator-cli generate -i /local/in/swagger.json -c /local/in/config.json -g cpp-restsdk -o /local/out/cpp-restsdk
@@ -44,7 +44,7 @@ You can provide a `config.json` file to configure the generator. To generate the
 Due to an issue in the generator you have to do some slightly modifications to the `swagger.json` file to get compilable code from the generator.
 You have to modify all occurencies of `oneOf`.
 
-Example: You have to change this
+Example: You have to change this:
 ```
 "oneOf": [
     {
@@ -53,12 +53,12 @@ Example: You have to change this
 ]
 ```
 
-to this
+to this:
 ```
     "$ref": "#/components/schemas/TemplateDto"
 ```
 
-You can download the OpenAPI document from https://api365.slascone.com/swagger/v2/swagger.json
+You can download the OpenAPI document from https://api365.slascone.com/swagger/v2/swagger.json.
 
 ## Signature check and (temporarily) offline files
 

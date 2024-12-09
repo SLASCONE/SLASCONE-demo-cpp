@@ -4,7 +4,7 @@ This console application demonstrates the usage of the SLASCONE API for standard
 
 For more information about this solution, visit
 https://slascone.com/ and/or
-https://support.slascone.com/
+https://support.slascone.com/.
 
 ## Development Container
 
@@ -35,21 +35,19 @@ In the demo app you can
 In the demo app you can create several types of heartbeats:
  - Analytical and 
  - Usage heartbeats (see: [product analytics](https://support.slascone.com/hc/en-us/articles/360016055537-PRODUCT-ANALYTICS))
- - Consumption heartbeats (see [consumption based limitations](https://support.slascone.com/hc/en-us/articles/360016057197-CONSUMPTION-BASED-LIMITATIONS))
+ - Consumption heartbeats (see: [consumption based limitations](https://support.slascone.com/hc/en-us/articles/360016057197-CONSUMPTION-BASED-LIMITATIONS))
 
 ### Session management
 
-In the demo app you can open and close sessions in a _floating_ licensing model. Please refer to the articles about floating [user licenses](https://support.slascone.com/hc/en-us/articles/7756256586653-FLOATING-USER-LICENSES) respectively [device licenses](https://support.slascone.com/hc/en-us/articles/360016152858-FLOATING-DEVICE-LICENSES)
+In the demo app you can open and close sessions in a _floating_ licensing model. Please refer to the articles about floating [user licenses](https://support.slascone.com/hc/en-us/articles/7756256586653-FLOATING-USER-LICENSES) and [device licenses](https://support.slascone.com/hc/en-us/articles/360016152858-FLOATING-DEVICE-LICENSES).
 
 ### Security aspects
 
-The demo app contains exemplary implementations of how to verify the SLASCONE WebAPI response with the signature header or verify the integrity of an offline license file in XML fornat. You can find more details about [digital signature and data integrity](https://support.slascone.com/hc/en-us/articles/360016063637-DIGITAL-SIGNATURE-AND-DATA-INTEGRITY) in the SLASCONE help center.
+The demo app contains exemplary implementations of how to verify the SLASCONE WebAPI response with the signature header or verify the integrity of an offline license file in XML format. You can find more details about [digital signature and data integrity](https://support.slascone.com/hc/en-us/articles/360016063637-DIGITAL-SIGNATURE-AND-DATA-INTEGRITY) in the SLASCONE help center.
 
 ## Running the demo app with Windows
 
-To build and run this application with Windows you have to install all dependencies manually. You can install the dependencies with [`vcpkg`](https://vcpkg.io/en/).
-
-Additionally you have to provide some paths to CMake so that the libraries can be found during the CMake configuration process.
+To build and run this application with Windows you have to install all dependencies manually. You can install the dependencies with [`vcpkg`](https://vcpkg.io/en/). Additionally you have to provide some paths to CMake so that the libraries can be found during the CMake configuration process.
 
 These variables are defined in the `CMakeSettings.json` file. Please locate this file in the top level of the project folder.
 
