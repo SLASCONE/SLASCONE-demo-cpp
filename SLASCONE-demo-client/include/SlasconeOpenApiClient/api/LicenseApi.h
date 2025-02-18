@@ -23,9 +23,11 @@
 #include "SlasconeOpenApiClient/ApiClient.h"
 
 #include "SlasconeOpenApiClient/model/AddLicenseUserErrorExamples.h"
+#include "SlasconeOpenApiClient/model/BulkDeleteUserResultDto.h"
 #include "SlasconeOpenApiClient/model/ConsumptionBalanceDto.h"
 #include "SlasconeOpenApiClient/model/ConsumptionHeartbeatLazyLoadDto.h"
 #include "SlasconeOpenApiClient/model/DeviceLicenseAssignmentDto.h"
+#include "SlasconeOpenApiClient/model/DevicesSortEnum.h"
 #include "SlasconeOpenApiClient/model/ExceptionEndDateBeforeStartDateError.h"
 #include "SlasconeOpenApiClient/model/GetLicenseUsersErrorExamples.h"
 #include "SlasconeOpenApiClient/model/HistoryDto.h"
@@ -170,6 +172,20 @@ public:
         boost::optional<bool> removeUsers
     ) const;
     /// <summary>
+    /// Deletes many license users
+    /// </summary>
+    /// <remarks>
+    /// More information about &lt;a href&#x3D;\&quot;https://support.slascone.com/hc/en-us/articles/360017647817-NAMED-USER-LICENSES\&quot;&gt;named user licenses&lt;/a&gt;
+    /// </remarks>
+    /// <param name="isvId"></param>
+    /// <param name="licenseId"></param>
+    /// <param name="utilityStringT"></param>
+    pplx::task<std::vector<std::shared_ptr<BulkDeleteUserResultDto>>> deleteLicenseUsersAsync(
+        utility::string_t isvId,
+        utility::string_t licenseId,
+        std::vector<utility::string_t> utilityStringT
+    ) const;
+    /// <summary>
     /// Downloads an XML license file
     /// </summary>
     /// <remarks>
@@ -259,7 +275,7 @@ public:
     /// </remarks>
     /// <param name="isvId"></param>
     /// <param name="licenseId"></param>
-    /// <param name="sortOption"> (optional, default to 0)</param>
+    /// <param name="sortOption"> (optional, default to new DevicesSortEnum())</param>
     /// <param name="descending"> (optional, default to false)</param>
     /// <param name="includeAnalyticalHeartbeats"> (optional, default to false)</param>
     /// <param name="operatingSystems"> (optional, default to std::vector&lt;std::shared_ptr&lt;utility::string_t&gt;&gt;())</param>
@@ -269,7 +285,7 @@ public:
     pplx::task<std::vector<std::shared_ptr<DeviceLicenseAssignmentDto>>> getLicenseAssignments(
         utility::string_t isvId,
         utility::string_t licenseId,
-        boost::optional<int32_t> sortOption,
+        boost::optional<std::shared_ptr<DevicesSortEnum>> sortOption,
         boost::optional<bool> descending,
         boost::optional<bool> includeAnalyticalHeartbeats,
         boost::optional<std::vector<utility::string_t>> operatingSystems,

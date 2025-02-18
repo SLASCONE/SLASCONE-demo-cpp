@@ -53,6 +53,10 @@ LicenseInfoDto::LicenseInfoDto()
     m_Is_license_validIsSet = false;
     m_Expiration_date_utc = utility::datetime();
     m_Expiration_date_utcIsSet = false;
+    m_Token_limit = 0;
+    m_Token_limitIsSet = false;
+    m_Floating_token_limit = 0;
+    m_Floating_token_limitIsSet = false;
     m_Is_temporary = false;
     m_Is_temporaryIsSet = false;
     m_Is_software_version_valid = false;
@@ -157,6 +161,14 @@ web::json::value LicenseInfoDto::toJson() const
     if(m_Expiration_date_utcIsSet)
     {
         val[utility::conversions::to_string_t(U("expiration_date_utc"))] = ModelBase::toJson(m_Expiration_date_utc);
+    }
+    if(m_Token_limitIsSet)
+    {
+        val[utility::conversions::to_string_t(U("token_limit"))] = ModelBase::toJson(m_Token_limit);
+    }
+    if(m_Floating_token_limitIsSet)
+    {
+        val[utility::conversions::to_string_t(U("floating_token_limit"))] = ModelBase::toJson(m_Floating_token_limit);
     }
     if(m_Is_temporaryIsSet)
     {
@@ -392,6 +404,26 @@ bool LicenseInfoDto::fromJson(const web::json::value& val)
             setExpirationDateUtc(refVal_setExpirationDateUtc);
         }
     }
+    if(val.has_field(utility::conversions::to_string_t(U("token_limit"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("token_limit")));
+        if(!fieldValue.is_null())
+        {
+            int32_t refVal_setTokenLimit;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setTokenLimit);
+            setTokenLimit(refVal_setTokenLimit);
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(U("floating_token_limit"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("floating_token_limit")));
+        if(!fieldValue.is_null())
+        {
+            int32_t refVal_setFloatingTokenLimit;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setFloatingTokenLimit);
+            setFloatingTokenLimit(refVal_setFloatingTokenLimit);
+        }
+    }
     if(val.has_field(utility::conversions::to_string_t(U("is_temporary"))))
     {
         const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("is_temporary")));
@@ -610,6 +642,14 @@ void LicenseInfoDto::toMultipart(std::shared_ptr<MultipartFormData> multipart, c
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("expiration_date_utc")), m_Expiration_date_utc));
     }
+    if(m_Token_limitIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("token_limit")), m_Token_limit));
+    }
+    if(m_Floating_token_limitIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("floating_token_limit")), m_Floating_token_limit));
+    }
     if(m_Is_temporaryIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("is_temporary")), m_Is_temporary));
@@ -778,6 +818,18 @@ bool LicenseInfoDto::fromMultiPart(std::shared_ptr<MultipartFormData> multipart,
         utility::datetime refVal_setExpirationDateUtc;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("expiration_date_utc"))), refVal_setExpirationDateUtc );
         setExpirationDateUtc(refVal_setExpirationDateUtc);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(U("token_limit"))))
+    {
+        int32_t refVal_setTokenLimit;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("token_limit"))), refVal_setTokenLimit );
+        setTokenLimit(refVal_setTokenLimit);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(U("floating_token_limit"))))
+    {
+        int32_t refVal_setFloatingTokenLimit;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("floating_token_limit"))), refVal_setFloatingTokenLimit );
+        setFloatingTokenLimit(refVal_setFloatingTokenLimit);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(U("is_temporary"))))
     {
@@ -1205,6 +1257,46 @@ bool LicenseInfoDto::expirationDateUtcIsSet() const
 void LicenseInfoDto::unsetExpiration_date_utc()
 {
     m_Expiration_date_utcIsSet = false;
+}
+int32_t LicenseInfoDto::getTokenLimit() const
+{
+    return m_Token_limit;
+}
+
+void LicenseInfoDto::setTokenLimit(int32_t value)
+{
+    m_Token_limit = value;
+    m_Token_limitIsSet = true;
+}
+
+bool LicenseInfoDto::tokenLimitIsSet() const
+{
+    return m_Token_limitIsSet;
+}
+
+void LicenseInfoDto::unsetToken_limit()
+{
+    m_Token_limitIsSet = false;
+}
+int32_t LicenseInfoDto::getFloatingTokenLimit() const
+{
+    return m_Floating_token_limit;
+}
+
+void LicenseInfoDto::setFloatingTokenLimit(int32_t value)
+{
+    m_Floating_token_limit = value;
+    m_Floating_token_limitIsSet = true;
+}
+
+bool LicenseInfoDto::floatingTokenLimitIsSet() const
+{
+    return m_Floating_token_limitIsSet;
+}
+
+void LicenseInfoDto::unsetFloating_token_limit()
+{
+    m_Floating_token_limitIsSet = false;
 }
 bool LicenseInfoDto::isIsTemporary() const
 {

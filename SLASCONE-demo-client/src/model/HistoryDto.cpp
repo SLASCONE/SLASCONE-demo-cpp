@@ -26,6 +26,9 @@ HistoryDto::HistoryDto()
     m_IdIsSet = false;
     m_New_value = utility::conversions::to_string_t("");
     m_New_valueIsSet = false;
+    m_ActionIsSet = false;
+    m_Comment = utility::conversions::to_string_t("");
+    m_CommentIsSet = false;
     m_Last_modified_by = utility::conversions::to_string_t("");
     m_Last_modified_byIsSet = false;
     m_Modified_date_utc = utility::datetime();
@@ -55,6 +58,14 @@ web::json::value HistoryDto::toJson() const
     if(m_New_valueIsSet)
     {
         val[utility::conversions::to_string_t(U("new_value"))] = ModelBase::toJson(m_New_value);
+    }
+    if(m_ActionIsSet)
+    {
+        val[utility::conversions::to_string_t(U("action"))] = ModelBase::toJson(m_Action);
+    }
+    if(m_CommentIsSet)
+    {
+        val[utility::conversions::to_string_t(U("comment"))] = ModelBase::toJson(m_Comment);
     }
     if(m_Last_modified_byIsSet)
     {
@@ -94,6 +105,26 @@ bool HistoryDto::fromJson(const web::json::value& val)
             utility::string_t refVal_setNewValue;
             ok &= ModelBase::fromJson(fieldValue, refVal_setNewValue);
             setNewValue(refVal_setNewValue);
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(U("action"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("action")));
+        if(!fieldValue.is_null())
+        {
+            std::shared_ptr<HistoryAction> refVal_setAction;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setAction);
+            setAction(refVal_setAction);
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(U("comment"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("comment")));
+        if(!fieldValue.is_null())
+        {
+            utility::string_t refVal_setComment;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setComment);
+            setComment(refVal_setComment);
         }
     }
     if(val.has_field(utility::conversions::to_string_t(U("last_modified_by"))))
@@ -144,6 +175,14 @@ void HistoryDto::toMultipart(std::shared_ptr<MultipartFormData> multipart, const
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("new_value")), m_New_value));
     }
+    if(m_ActionIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("action")), m_Action));
+    }
+    if(m_CommentIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("comment")), m_Comment));
+    }
     if(m_Last_modified_byIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("last_modified_by")), m_Last_modified_by));
@@ -178,6 +217,18 @@ bool HistoryDto::fromMultiPart(std::shared_ptr<MultipartFormData> multipart, con
         utility::string_t refVal_setNewValue;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("new_value"))), refVal_setNewValue );
         setNewValue(refVal_setNewValue);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(U("action"))))
+    {
+        std::shared_ptr<HistoryAction> refVal_setAction;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("action"))), refVal_setAction );
+        setAction(refVal_setAction);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(U("comment"))))
+    {
+        utility::string_t refVal_setComment;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("comment"))), refVal_setComment );
+        setComment(refVal_setComment);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(U("last_modified_by"))))
     {
@@ -239,6 +290,46 @@ bool HistoryDto::newValueIsSet() const
 void HistoryDto::unsetNew_value()
 {
     m_New_valueIsSet = false;
+}
+std::shared_ptr<HistoryAction> HistoryDto::getAction() const
+{
+    return m_Action;
+}
+
+void HistoryDto::setAction(const std::shared_ptr<HistoryAction>& value)
+{
+    m_Action = value;
+    m_ActionIsSet = true;
+}
+
+bool HistoryDto::actionIsSet() const
+{
+    return m_ActionIsSet;
+}
+
+void HistoryDto::unsetAction()
+{
+    m_ActionIsSet = false;
+}
+utility::string_t HistoryDto::getComment() const
+{
+    return m_Comment;
+}
+
+void HistoryDto::setComment(const utility::string_t& value)
+{
+    m_Comment = value;
+    m_CommentIsSet = true;
+}
+
+bool HistoryDto::commentIsSet() const
+{
+    return m_CommentIsSet;
+}
+
+void HistoryDto::unsetComment()
+{
+    m_CommentIsSet = false;
 }
 utility::string_t HistoryDto::getLastModifiedBy() const
 {

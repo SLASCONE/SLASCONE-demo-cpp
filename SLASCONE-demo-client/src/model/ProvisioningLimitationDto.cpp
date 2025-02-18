@@ -30,6 +30,8 @@ ProvisioningLimitationDto::ProvisioningLimitationDto()
     m_DescriptionIsSet = false;
     m_Value = 0;
     m_ValueIsSet = false;
+    m_Remaining = 0.0;
+    m_RemainingIsSet = false;
     m_Consumption_reset_modeIsSet = false;
     m_Consumption_reset_period_days = 0;
     m_Consumption_reset_period_daysIsSet = false;
@@ -64,6 +66,10 @@ web::json::value ProvisioningLimitationDto::toJson() const
     if(m_ValueIsSet)
     {
         val[utility::conversions::to_string_t(U("value"))] = ModelBase::toJson(m_Value);
+    }
+    if(m_RemainingIsSet)
+    {
+        val[utility::conversions::to_string_t(U("remaining"))] = ModelBase::toJson(m_Remaining);
     }
     if(m_Consumption_reset_modeIsSet)
     {
@@ -121,6 +127,16 @@ bool ProvisioningLimitationDto::fromJson(const web::json::value& val)
             setValue(refVal_setValue);
         }
     }
+    if(val.has_field(utility::conversions::to_string_t(U("remaining"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("remaining")));
+        if(!fieldValue.is_null())
+        {
+            double refVal_setRemaining;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setRemaining);
+            setRemaining(refVal_setRemaining);
+        }
+    }
     if(val.has_field(utility::conversions::to_string_t(U("consumption_reset_mode"))))
     {
         const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("consumption_reset_mode")));
@@ -167,6 +183,10 @@ void ProvisioningLimitationDto::toMultipart(std::shared_ptr<MultipartFormData> m
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("value")), m_Value));
     }
+    if(m_RemainingIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("remaining")), m_Remaining));
+    }
     if(m_Consumption_reset_modeIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("consumption_reset_mode")), m_Consumption_reset_mode));
@@ -209,6 +229,12 @@ bool ProvisioningLimitationDto::fromMultiPart(std::shared_ptr<MultipartFormData>
         int32_t refVal_setValue;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("value"))), refVal_setValue );
         setValue(refVal_setValue);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(U("remaining"))))
+    {
+        double refVal_setRemaining;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("remaining"))), refVal_setRemaining );
+        setRemaining(refVal_setRemaining);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(U("consumption_reset_mode"))))
     {
@@ -304,6 +330,26 @@ bool ProvisioningLimitationDto::valueIsSet() const
 void ProvisioningLimitationDto::unsetValue()
 {
     m_ValueIsSet = false;
+}
+double ProvisioningLimitationDto::getRemaining() const
+{
+    return m_Remaining;
+}
+
+void ProvisioningLimitationDto::setRemaining(double value)
+{
+    m_Remaining = value;
+    m_RemainingIsSet = true;
+}
+
+bool ProvisioningLimitationDto::remainingIsSet() const
+{
+    return m_RemainingIsSet;
+}
+
+void ProvisioningLimitationDto::unsetRemaining()
+{
+    m_RemainingIsSet = false;
 }
 std::shared_ptr<ConsumptionResetPeriod> ProvisioningLimitationDto::getConsumptionResetMode() const
 {

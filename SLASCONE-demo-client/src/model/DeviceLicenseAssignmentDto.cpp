@@ -61,6 +61,13 @@ DeviceLicenseAssignmentDto::DeviceLicenseAssignmentDto()
     m_Operating_system = utility::conversions::to_string_t("");
     m_Operating_systemIsSet = false;
     m_Tag_assignmentsIsSet = false;
+    m_License_activation_typeIsSet = false;
+    m_Created_date_utc = utility::datetime();
+    m_Created_date_utcIsSet = false;
+    m_Modified_date_utc = utility::datetime();
+    m_Modified_date_utcIsSet = false;
+    m_Last_modified_by = utility::conversions::to_string_t("");
+    m_Last_modified_byIsSet = false;
 }
 
 DeviceLicenseAssignmentDto::~DeviceLicenseAssignmentDto()
@@ -160,6 +167,22 @@ web::json::value DeviceLicenseAssignmentDto::toJson() const
     if(m_Tag_assignmentsIsSet)
     {
         val[utility::conversions::to_string_t(U("tag_assignments"))] = ModelBase::toJson(m_Tag_assignments);
+    }
+    if(m_License_activation_typeIsSet)
+    {
+        val[utility::conversions::to_string_t(U("license_activation_type"))] = ModelBase::toJson(m_License_activation_type);
+    }
+    if(m_Created_date_utcIsSet)
+    {
+        val[utility::conversions::to_string_t(U("created_date_utc"))] = ModelBase::toJson(m_Created_date_utc);
+    }
+    if(m_Modified_date_utcIsSet)
+    {
+        val[utility::conversions::to_string_t(U("modified_date_utc"))] = ModelBase::toJson(m_Modified_date_utc);
+    }
+    if(m_Last_modified_byIsSet)
+    {
+        val[utility::conversions::to_string_t(U("last_modified_by"))] = ModelBase::toJson(m_Last_modified_by);
     }
 
     return val;
@@ -379,6 +402,46 @@ bool DeviceLicenseAssignmentDto::fromJson(const web::json::value& val)
             setTagAssignments(refVal_setTagAssignments);
         }
     }
+    if(val.has_field(utility::conversions::to_string_t(U("license_activation_type"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("license_activation_type")));
+        if(!fieldValue.is_null())
+        {
+            std::shared_ptr<LicenseActivationType> refVal_setLicenseActivationType;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setLicenseActivationType);
+            setLicenseActivationType(refVal_setLicenseActivationType);
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(U("created_date_utc"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("created_date_utc")));
+        if(!fieldValue.is_null())
+        {
+            utility::datetime refVal_setCreatedDateUtc;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setCreatedDateUtc);
+            setCreatedDateUtc(refVal_setCreatedDateUtc);
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(U("modified_date_utc"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("modified_date_utc")));
+        if(!fieldValue.is_null())
+        {
+            utility::datetime refVal_setModifiedDateUtc;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setModifiedDateUtc);
+            setModifiedDateUtc(refVal_setModifiedDateUtc);
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(U("last_modified_by"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(U("last_modified_by")));
+        if(!fieldValue.is_null())
+        {
+            utility::string_t refVal_setLastModifiedBy;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setLastModifiedBy);
+            setLastModifiedBy(refVal_setLastModifiedBy);
+        }
+    }
     return ok;
 }
 
@@ -472,6 +535,22 @@ void DeviceLicenseAssignmentDto::toMultipart(std::shared_ptr<MultipartFormData> 
     if(m_Tag_assignmentsIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("tag_assignments")), m_Tag_assignments));
+    }
+    if(m_License_activation_typeIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("license_activation_type")), m_License_activation_type));
+    }
+    if(m_Created_date_utcIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("created_date_utc")), m_Created_date_utc));
+    }
+    if(m_Modified_date_utcIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("modified_date_utc")), m_Modified_date_utc));
+    }
+    if(m_Last_modified_byIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(U("last_modified_by")), m_Last_modified_by));
     }
 }
 
@@ -609,6 +688,30 @@ bool DeviceLicenseAssignmentDto::fromMultiPart(std::shared_ptr<MultipartFormData
         std::vector<std::shared_ptr<TagAssignmentDto>> refVal_setTagAssignments;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("tag_assignments"))), refVal_setTagAssignments );
         setTagAssignments(refVal_setTagAssignments);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(U("license_activation_type"))))
+    {
+        std::shared_ptr<LicenseActivationType> refVal_setLicenseActivationType;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("license_activation_type"))), refVal_setLicenseActivationType );
+        setLicenseActivationType(refVal_setLicenseActivationType);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(U("created_date_utc"))))
+    {
+        utility::datetime refVal_setCreatedDateUtc;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("created_date_utc"))), refVal_setCreatedDateUtc );
+        setCreatedDateUtc(refVal_setCreatedDateUtc);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(U("modified_date_utc"))))
+    {
+        utility::datetime refVal_setModifiedDateUtc;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("modified_date_utc"))), refVal_setModifiedDateUtc );
+        setModifiedDateUtc(refVal_setModifiedDateUtc);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(U("last_modified_by"))))
+    {
+        utility::string_t refVal_setLastModifiedBy;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(U("last_modified_by"))), refVal_setLastModifiedBy );
+        setLastModifiedBy(refVal_setLastModifiedBy);
     }
     return ok;
 }
@@ -1032,6 +1135,86 @@ bool DeviceLicenseAssignmentDto::tagAssignmentsIsSet() const
 void DeviceLicenseAssignmentDto::unsetTag_assignments()
 {
     m_Tag_assignmentsIsSet = false;
+}
+std::shared_ptr<LicenseActivationType> DeviceLicenseAssignmentDto::getLicenseActivationType() const
+{
+    return m_License_activation_type;
+}
+
+void DeviceLicenseAssignmentDto::setLicenseActivationType(const std::shared_ptr<LicenseActivationType>& value)
+{
+    m_License_activation_type = value;
+    m_License_activation_typeIsSet = true;
+}
+
+bool DeviceLicenseAssignmentDto::licenseActivationTypeIsSet() const
+{
+    return m_License_activation_typeIsSet;
+}
+
+void DeviceLicenseAssignmentDto::unsetLicense_activation_type()
+{
+    m_License_activation_typeIsSet = false;
+}
+utility::datetime DeviceLicenseAssignmentDto::getCreatedDateUtc() const
+{
+    return m_Created_date_utc;
+}
+
+void DeviceLicenseAssignmentDto::setCreatedDateUtc(const utility::datetime& value)
+{
+    m_Created_date_utc = value;
+    m_Created_date_utcIsSet = true;
+}
+
+bool DeviceLicenseAssignmentDto::createdDateUtcIsSet() const
+{
+    return m_Created_date_utcIsSet;
+}
+
+void DeviceLicenseAssignmentDto::unsetCreated_date_utc()
+{
+    m_Created_date_utcIsSet = false;
+}
+utility::datetime DeviceLicenseAssignmentDto::getModifiedDateUtc() const
+{
+    return m_Modified_date_utc;
+}
+
+void DeviceLicenseAssignmentDto::setModifiedDateUtc(const utility::datetime& value)
+{
+    m_Modified_date_utc = value;
+    m_Modified_date_utcIsSet = true;
+}
+
+bool DeviceLicenseAssignmentDto::modifiedDateUtcIsSet() const
+{
+    return m_Modified_date_utcIsSet;
+}
+
+void DeviceLicenseAssignmentDto::unsetModified_date_utc()
+{
+    m_Modified_date_utcIsSet = false;
+}
+utility::string_t DeviceLicenseAssignmentDto::getLastModifiedBy() const
+{
+    return m_Last_modified_by;
+}
+
+void DeviceLicenseAssignmentDto::setLastModifiedBy(const utility::string_t& value)
+{
+    m_Last_modified_by = value;
+    m_Last_modified_byIsSet = true;
+}
+
+bool DeviceLicenseAssignmentDto::lastModifiedByIsSet() const
+{
+    return m_Last_modified_byIsSet;
+}
+
+void DeviceLicenseAssignmentDto::unsetLast_modified_by()
+{
+    m_Last_modified_byIsSet = false;
 }
 }
 }

@@ -94,6 +94,15 @@ public:
     /// <summary>
     /// 
     /// </summary>
+    double getRemaining() const;
+    bool remainingIsSet() const;
+    void unsetRemaining();
+
+    void setRemaining(double value);
+
+    /// <summary>
+    /// 
+    /// </summary>
     std::shared_ptr<ConsumptionResetPeriod> getConsumptionResetMode() const;
     bool consumptionResetModeIsSet() const;
     void unsetConsumption_reset_mode();
@@ -119,6 +128,8 @@ protected:
     bool m_DescriptionIsSet;
     int32_t m_Value;
     bool m_ValueIsSet;
+    double m_Remaining;
+    bool m_RemainingIsSet;
     std::shared_ptr<ConsumptionResetPeriod> m_Consumption_reset_mode;
     bool m_Consumption_reset_modeIsSet;
     int32_t m_Consumption_reset_period_days;

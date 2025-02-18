@@ -25,6 +25,7 @@
 #include "SlasconeOpenApiClient/model/DeviceAnalyticalHeartbeatDto.h"
 #include <cpprest/details/basic_types.h>
 #include "SlasconeOpenApiClient/model/DeviceHeartbeatDto.h"
+#include "SlasconeOpenApiClient/model/LicenseActivationType.h"
 #include <vector>
 
 namespace org {
@@ -250,6 +251,42 @@ public:
 
     void setTagAssignments(const std::vector<std::shared_ptr<TagAssignmentDto>>& value);
 
+    /// <summary>
+    /// 
+    /// </summary>
+    std::shared_ptr<LicenseActivationType> getLicenseActivationType() const;
+    bool licenseActivationTypeIsSet() const;
+    void unsetLicense_activation_type();
+
+    void setLicenseActivationType(const std::shared_ptr<LicenseActivationType>& value);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    utility::datetime getCreatedDateUtc() const;
+    bool createdDateUtcIsSet() const;
+    void unsetCreated_date_utc();
+
+    void setCreatedDateUtc(const utility::datetime& value);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    utility::datetime getModifiedDateUtc() const;
+    bool modifiedDateUtcIsSet() const;
+    void unsetModified_date_utc();
+
+    void setModifiedDateUtc(const utility::datetime& value);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    utility::string_t getLastModifiedBy() const;
+    bool lastModifiedByIsSet() const;
+    void unsetLast_modified_by();
+
+    void setLastModifiedBy(const utility::string_t& value);
+
 
 protected:
     utility::string_t m_Id;
@@ -294,6 +331,14 @@ protected:
     bool m_Operating_systemIsSet;
     std::vector<std::shared_ptr<TagAssignmentDto>> m_Tag_assignments;
     bool m_Tag_assignmentsIsSet;
+    std::shared_ptr<LicenseActivationType> m_License_activation_type;
+    bool m_License_activation_typeIsSet;
+    utility::datetime m_Created_date_utc;
+    bool m_Created_date_utcIsSet;
+    utility::datetime m_Modified_date_utc;
+    bool m_Modified_date_utcIsSet;
+    utility::string_t m_Last_modified_by;
+    bool m_Last_modified_byIsSet;
 };
 
 

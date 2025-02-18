@@ -122,6 +122,20 @@ public:
         utility::string_t templateId
     ) const;
     /// <summary>
+    /// Returns a specific template (edition) audit history snapshot
+    /// </summary>
+    /// <remarks>
+    /// 
+    /// </remarks>
+    /// <param name="isvId"></param>
+    /// <param name="templateId"></param>
+    /// <param name="historyId"></param>
+    pplx::task<std::shared_ptr<HistoryDto>> getTemplateHistoryDetail(
+        utility::string_t isvId,
+        utility::string_t templateId,
+        utility::string_t historyId
+    ) const;
+    /// <summary>
     /// Updates a template (edition)
     /// </summary>
     /// <remarks>

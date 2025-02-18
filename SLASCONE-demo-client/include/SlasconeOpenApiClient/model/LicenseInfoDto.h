@@ -229,6 +229,24 @@ public:
     /// <summary>
     /// 
     /// </summary>
+    int32_t getTokenLimit() const;
+    bool tokenLimitIsSet() const;
+    void unsetToken_limit();
+
+    void setTokenLimit(int32_t value);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    int32_t getFloatingTokenLimit() const;
+    bool floatingTokenLimitIsSet() const;
+    void unsetFloating_token_limit();
+
+    void setFloatingTokenLimit(int32_t value);
+
+    /// <summary>
+    /// 
+    /// </summary>
     bool isIsTemporary() const;
     bool isTemporaryIsSet() const;
     void unsetIs_temporary();
@@ -388,6 +406,10 @@ protected:
     bool m_Is_license_validIsSet;
     utility::datetime m_Expiration_date_utc;
     bool m_Expiration_date_utcIsSet;
+    int32_t m_Token_limit;
+    bool m_Token_limitIsSet;
+    int32_t m_Floating_token_limit;
+    bool m_Floating_token_limitIsSet;
     bool m_Is_temporary;
     bool m_Is_temporaryIsSet;
     bool m_Is_software_version_valid;

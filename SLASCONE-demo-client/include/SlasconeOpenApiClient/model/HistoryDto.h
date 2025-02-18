@@ -21,6 +21,7 @@
 
 #include "SlasconeOpenApiClient/ModelBase.h"
 
+#include "SlasconeOpenApiClient/model/HistoryAction.h"
 #include <cpprest/details/basic_types.h>
 
 namespace org {
@@ -75,6 +76,24 @@ public:
     /// <summary>
     /// 
     /// </summary>
+    std::shared_ptr<HistoryAction> getAction() const;
+    bool actionIsSet() const;
+    void unsetAction();
+
+    void setAction(const std::shared_ptr<HistoryAction>& value);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    utility::string_t getComment() const;
+    bool commentIsSet() const;
+    void unsetComment();
+
+    void setComment(const utility::string_t& value);
+
+    /// <summary>
+    /// 
+    /// </summary>
     utility::string_t getLastModifiedBy() const;
     bool lastModifiedByIsSet() const;
     void unsetLast_modified_by();
@@ -105,6 +124,10 @@ protected:
     bool m_IdIsSet;
     utility::string_t m_New_value;
     bool m_New_valueIsSet;
+    std::shared_ptr<HistoryAction> m_Action;
+    bool m_ActionIsSet;
+    utility::string_t m_Comment;
+    bool m_CommentIsSet;
     utility::string_t m_Last_modified_by;
     bool m_Last_modified_byIsSet;
     utility::datetime m_Modified_date_utc;

@@ -22,6 +22,7 @@
 
 #include "SlasconeOpenApiClient/ApiClient.h"
 
+#include "SlasconeOpenApiClient/model/HistoryDto.h"
 #include "SlasconeOpenApiClient/model/LicenseBundleDto.h"
 #include "SlasconeOpenApiClient/model/ProblemDetails.h"
 #include <vector>
@@ -80,6 +81,32 @@ public:
     pplx::task<std::shared_ptr<LicenseBundleDto>> getLicenseBundle(
         utility::string_t isvId,
         utility::string_t licenseBundleId
+    ) const;
+    /// <summary>
+    /// Returns the entire audit history of a license bundle
+    /// </summary>
+    /// <remarks>
+    /// 
+    /// </remarks>
+    /// <param name="isvId"></param>
+    /// <param name="licenseBundleId"></param>
+    pplx::task<std::vector<std::shared_ptr<HistoryDto>>> getLicenseBundleHistory(
+        utility::string_t isvId,
+        utility::string_t licenseBundleId
+    ) const;
+    /// <summary>
+    /// Returns a specific license bundle audit history snapshot
+    /// </summary>
+    /// <remarks>
+    /// 
+    /// </remarks>
+    /// <param name="isvId"></param>
+    /// <param name="licenseBundleId"></param>
+    /// <param name="historyId"></param>
+    pplx::task<std::shared_ptr<HistoryDto>> getLicenseBundleHistoryDetail(
+        utility::string_t isvId,
+        utility::string_t licenseBundleId,
+        utility::string_t historyId
     ) const;
     /// <summary>
     /// 
