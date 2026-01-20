@@ -21,11 +21,15 @@ find_package(LibXslt REQUIRED)
 
 find_package(cpprestsdk REQUIRED)
 
+# Find xmlsec1 using pkg-config
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(XMLSEC REQUIRED xmlsec1-openssl)
+
 # Include path to SLASCONE-demo-client library
 include_directories(${CMAKE_SOURCE_DIR}/SLASCONE-demo-client/include)
 
 # Include directories
-include_directories(${OPENSSL_INCLUDE_DIR} ${LIBXML2_INCLUDE_DIR} ${LIBXSLT_INCLUDE_DIR} ${Iconv_INCLUDE_DIR} ${XMLSEC_INCLUDE_DIR})
+include_directories(${OPENSSL_INCLUDE_DIR} ${LIBXML2_INCLUDE_DIR} ${LIBXSLT_INCLUDE_DIR} ${Iconv_INCLUDE_DIR} ${XMLSEC_INCLUDE_DIRS})
 
 # Define XMLSEC definitions
 add_definitions(-D__XMLSEC_FUNCTION__=__func__)
@@ -43,7 +47,7 @@ target_link_libraries(SLASCONE-demo-cpp
   ${LIBXML2_LIBRARIES}
   ${LIBXSLT_LIBRARIES}
   ${Iconv_LIBRARY}
-  ${XMLSEC_LIBRARY}
+  ${XMLSEC_LIBRARIES}
   ${XMLSEC_OPENSSL_LIBRARY}
   cpprestsdk::cpprest
   SLASCONE-demo-client)

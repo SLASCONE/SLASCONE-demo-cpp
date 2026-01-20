@@ -39,6 +39,7 @@ class SlasconeApiClient : public ApiClient
         EVP_PKEY* buildRsaPublicKey(const char* rsaPublicKey) const;
         int validateSignature(std::vector<unsigned char> body, std::string signature) const;
         int findOrCreateSlasconeFolder(std::filesystem::path& slasconeDir) const;
+        // void hexDump(const std::vector<unsigned char> &bytes) const;
 };
 }
 }

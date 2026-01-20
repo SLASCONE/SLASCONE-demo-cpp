@@ -176,6 +176,9 @@ int SlasconeApiClient::validateSignature(std::vector<unsigned char> body, std::s
 		return -1;
 	}
 
+	// hexDump(body);
+	std::cout << "Signature: " << signature << std::endl;
+
 	// Decode the base64 encoded signature
 	std::vector<unsigned char> signatureVec = utility::conversions::from_base64(signature);
 

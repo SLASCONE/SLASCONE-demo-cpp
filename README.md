@@ -10,6 +10,17 @@ https://support.slascone.com/.
 
 This project leverages a development container (`devcontainer`) to establish a consistent and reliable development environment. The devcontainer is pre-configured with all required dependencies, ensuring an optimal setup for running and contributing to the project. To utilize the development container, open the project in Visual Studio Code and choose the option to reopen it within the container. This approach guarantees that all dependencies are properly installed and configured.
 
+## Building and running with CMake presets
+
+The repo includes a `linux-debug` preset in [CMakePresets.json](CMakePresets.json) that keeps every build in an isolated tree under `out/build/linux-debug`. Run the following from the repository root:
+
+```
+cmake --preset linux-debug          # configure once
+cmake --build --preset linux-debug  # compile sources
+```
+
+The resulting executable lives at `out/build/linux-debug/SLASCONE-demo-cpp/SLASCONE-demo-cpp`, matching the default `.vscode/launch.json` entry so you can hit F5 immediately. If you prefer the classic in-source build, you can still run `cmake -S . -B . && cmake --build .`, but then update the launch configuration (or set `CMAKE_RUNTIME_OUTPUT_DIRECTORY`) to align with the new output path. Optional installs follow the usual `cmake --install --preset linux-debug` flow.
+
 ## Connecting to your SLASCONE environment
 
 The application connects to the official SLASCONE environment. In order to connect to your SLASCONE environment, adjust the values of the file `Helper.cpp`.
