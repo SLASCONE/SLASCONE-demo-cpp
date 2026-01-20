@@ -54,7 +54,7 @@ In the demo app you can open and close sessions in a _floating_ licensing model.
 
 ### Security aspects
 
-The demo app contains exemplary implementations of how to verify the SLASCONE WebAPI response with the signature header or verify the integrity of an offline license file in XML format. You can find more details about [digital signature and data integrity](https://support.slascone.com/hc/en-us/articles/360016063637-DIGITAL-SIGNATURE-AND-DATA-INTEGRITY) in the SLASCONE help center.
+The demo app contains exemplary implementations of how to verify the SLASCONE WebAPI response with the signature header or verify the integrity of an offline license file in XML format. On every request the client also generates a cryptographically strong random nonce, base64 encodes it, adds it to the `x-nonce` header, and later verifies the `x-nonce-signature` header so the server response cannot be replayed with stale data. You can inspect the full nonce and header handling inside [SLASCONE-demo-client/src/SlasconeApiClient.cpp](SLASCONE-demo-client/src/SlasconeApiClient.cpp#L54-L142), especially the `callApi()` override where the nonce, response signature, and persistence logic live. You can find more details about [digital signature and data integrity](https://support.slascone.com/hc/en-us/articles/360016063637-DIGITAL-SIGNATURE-AND-DATA-INTEGRITY) in the SLASCONE help center.
 
 ## Running the demo app with Windows
 

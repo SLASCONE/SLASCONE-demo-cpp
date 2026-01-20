@@ -14,6 +14,8 @@ namespace client {
 namespace api {
 
 const char* slasconeSignatureHeader = "x-slascone-signature";
+const char* slasconeNonceHeader = "x-nonce";
+const char* slasconeNonceSignatureHeader = "x-nonce-signature";
 const char* offlineLicenseFileName = "license.json";
 const char* offlineLicenseSignatureFileName = "license_signature.txt";
 const char* offlineSessionFileName = "session.token";
@@ -59,8 +61,26 @@ pplx::task<web::http::http_response> SlasconeApiClient::callApi(
 	const std::map<utility::string_t, std::shared_ptr<org::openapitools::client::api::HttpContent>> &fileParams,
 	const utility::string_t &contentType) const
 {
-	return ApiClient::callApi(path, method, queryParams, postBody, headerParams, formParams, fileParams, contentType)
-		.then([this, method, path, postBody](web::http::http_response response) -> web::http::http_response 
+	// Add a x-nonce header with a random base64 encoded value
+	utility::string_t nonce;
+
+	const int nonceSize = 16;
+	unsigned char nonceBytes[nonceSize];
+	if (RAND_bytes(nonceBytes, nonceSize) != 1)
+	{
+		std::cerr << "Error generating random nonce" << std::endl;
+	}
+	else
+	{
+		std::vector<unsigned char> nonceVec(nonceBytes, nonceBytes + nonceSize);
+		nonce = utility::conversions::to_base64(nonceVec);
+	}
+
+	auto headerParamsWithNonce = headerParams;
+	headerParamsWithNonce[slasconeNonceHeader] = nonce;
+
+	return ApiClient::callApi(path, method, queryParams, postBody, headerParamsWithNonce, formParams, fileParams, contentType)
+		.then([this, method, path, postBody, nonceBytes, nonceSize](web::http::http_response response) -> web::http::http_response 
 			{
 				if (response.status_code() != web::http::status_codes::OK)
 				{
@@ -109,10 +129,22 @@ pplx::task<web::http::http_response> SlasconeApiClient::callApi(
 					signature = utility::conversions::to_utf8string(signature_iterator->second);
 				}
 
-				// Validate the response body with the x-slascone-signature header
-				if (evpPublicKey != nullptr)
+				if (signatureHeaderMustBeValidated)
 				{
+					// Validate the response body with the x-slascone-signature header
 					validateSignature(body, signature);
+
+					// Get the x-nonce-signature header
+					std::string nonceSignature;
+					auto nonceSignature_iterator = response.headers().find(slasconeNonceSignatureHeader);
+					if (nonceSignature_iterator != response.headers().end())
+					{
+						nonceSignature = utility::conversions::to_utf8string(nonceSignature_iterator->second);
+					}
+
+					// Validate the nonce with the x-nonce-signature header
+					std::vector<unsigned char> nonceVec(nonceBytes, nonceBytes + nonceSize);
+					validateSignature(nonceVec, nonceSignature);
 				}
 
 				if (licenseInfoMustBeStored)
