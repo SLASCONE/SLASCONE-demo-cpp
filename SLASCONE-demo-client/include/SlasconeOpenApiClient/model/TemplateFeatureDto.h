@@ -78,6 +78,16 @@ public:
     void unsetIs_active();
     void setIsActive(bool value);
 
+    bool isIsHidden() const;
+    bool isHiddenIsSet() const;
+    void unsetIs_hidden();
+    void setIsHidden(bool value);
+
+    bool isIsCustomerPortalHidden() const;
+    bool isCustomerPortalHiddenIsSet() const;
+    void unsetIs_customer_portal_hidden();
+    void setIsCustomerPortalHidden(bool value);
+
 
 protected:
     utility::string_t m_Template_id;
@@ -94,6 +104,12 @@ protected:
 
     bool m_Is_active;
     bool m_Is_activeIsSet;
+
+    bool m_Is_hidden;
+    bool m_Is_hiddenIsSet;
+
+    bool m_Is_customer_portal_hidden;
+    bool m_Is_customer_portal_hiddenIsSet;
 
 };
 

@@ -28,6 +28,10 @@ TemplateConstrainedVariableDto::TemplateConstrainedVariableDto()
     m_Variable_nameIsSet = false;
     m_Is_adjustable = false;
     m_Is_adjustableIsSet = false;
+    m_Is_hidden = false;
+    m_Is_hiddenIsSet = false;
+    m_Is_customer_portal_hidden = false;
+    m_Is_customer_portal_hiddenIsSet = false;
     m_ValuesIsSet = false;
 }
 
@@ -62,6 +66,16 @@ web::json::value TemplateConstrainedVariableDto::toJson() const
     {   
         
         val[utility::conversions::to_string_t(_XPLATSTR("is_adjustable"))] = ModelBase::toJson(m_Is_adjustable);
+    }
+    if(m_Is_hiddenIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_hidden"))] = ModelBase::toJson(m_Is_hidden);
+    }
+    if(m_Is_customer_portal_hiddenIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))] = ModelBase::toJson(m_Is_customer_portal_hidden);
     }
     if(m_ValuesIsSet)
     {   
@@ -119,6 +133,28 @@ bool TemplateConstrainedVariableDto::fromJson(const web::json::value& val)
             
         }
     }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_hidden")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsHidden;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsHidden);
+            setIsHidden(refVal_setIsHidden);
+            
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsCustomerPortalHidden;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsCustomerPortalHidden);
+            setIsCustomerPortalHidden(refVal_setIsCustomerPortalHidden);
+            
+        }
+    }
     if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("values"))))
     {
         const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("values")));
@@ -155,6 +191,14 @@ void TemplateConstrainedVariableDto::toMultipart(std::shared_ptr<MultipartFormDa
     if(m_Is_adjustableIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_adjustable")), m_Is_adjustable));
+    }
+    if(m_Is_hiddenIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_hidden")), m_Is_hidden));
+    }
+    if(m_Is_customer_portal_hiddenIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden")), m_Is_customer_portal_hidden));
     }
     if(m_ValuesIsSet)
     {
@@ -194,6 +238,18 @@ bool TemplateConstrainedVariableDto::fromMultiPart(std::shared_ptr<MultipartForm
         bool refVal_setIsAdjustable;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_adjustable"))), refVal_setIsAdjustable );
         setIsAdjustable(refVal_setIsAdjustable);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))))
+    {
+        bool refVal_setIsHidden;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))), refVal_setIsHidden );
+        setIsHidden(refVal_setIsHidden);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))))
+    {
+        bool refVal_setIsCustomerPortalHidden;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))), refVal_setIsCustomerPortalHidden );
+        setIsCustomerPortalHidden(refVal_setIsCustomerPortalHidden);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("values"))))
     {
@@ -287,6 +343,46 @@ bool TemplateConstrainedVariableDto::isAdjustableIsSet() const
 void TemplateConstrainedVariableDto::unsetIs_adjustable()
 {
     m_Is_adjustableIsSet = false;
+}
+bool TemplateConstrainedVariableDto::isIsHidden() const
+{
+    return m_Is_hidden;
+}
+
+void TemplateConstrainedVariableDto::setIsHidden(bool value)
+{
+    m_Is_hidden = value;
+    m_Is_hiddenIsSet = true;
+}
+
+bool TemplateConstrainedVariableDto::isHiddenIsSet() const
+{
+    return m_Is_hiddenIsSet;
+}
+
+void TemplateConstrainedVariableDto::unsetIs_hidden()
+{
+    m_Is_hiddenIsSet = false;
+}
+bool TemplateConstrainedVariableDto::isIsCustomerPortalHidden() const
+{
+    return m_Is_customer_portal_hidden;
+}
+
+void TemplateConstrainedVariableDto::setIsCustomerPortalHidden(bool value)
+{
+    m_Is_customer_portal_hidden = value;
+    m_Is_customer_portal_hiddenIsSet = true;
+}
+
+bool TemplateConstrainedVariableDto::isCustomerPortalHiddenIsSet() const
+{
+    return m_Is_customer_portal_hiddenIsSet;
+}
+
+void TemplateConstrainedVariableDto::unsetIs_customer_portal_hidden()
+{
+    m_Is_customer_portal_hiddenIsSet = false;
 }
 std::vector<utility::string_t> TemplateConstrainedVariableDto::getValues() const
 {

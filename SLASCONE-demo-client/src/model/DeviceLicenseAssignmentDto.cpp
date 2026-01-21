@@ -60,6 +60,8 @@ DeviceLicenseAssignmentDto::DeviceLicenseAssignmentDto()
     m_Operating_systemIsSet = false;
     m_Tag_assignmentsIsSet = false;
     m_License_activation_typeIsSet = false;
+    m_Suspended_until_utc = utility::datetime();
+    m_Suspended_until_utcIsSet = false;
     m_Created_date_utc = utility::datetime();
     m_Created_date_utcIsSet = false;
     m_Modified_date_utc = utility::datetime();
@@ -189,6 +191,11 @@ web::json::value DeviceLicenseAssignmentDto::toJson() const
     {   
         
         val[utility::conversions::to_string_t(_XPLATSTR("license_activation_type"))] = ModelBase::toJson(m_License_activation_type);
+    }
+    if(m_Suspended_until_utcIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("suspended_until_utc"))] = ModelBase::toJson(m_Suspended_until_utc);
     }
     if(m_Created_date_utcIsSet)
     {   
@@ -454,6 +461,17 @@ bool DeviceLicenseAssignmentDto::fromJson(const web::json::value& val)
             
         }
     }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("suspended_until_utc"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("suspended_until_utc")));
+        if(!fieldValue.is_null())
+        {
+            utility::datetime refVal_setSuspendedUntilUtc;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setSuspendedUntilUtc);
+            setSuspendedUntilUtc(refVal_setSuspendedUntilUtc);
+            
+        }
+    }
     if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("created_date_utc"))))
     {
         const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("created_date_utc")));
@@ -584,6 +602,10 @@ void DeviceLicenseAssignmentDto::toMultipart(std::shared_ptr<MultipartFormData> 
     if(m_License_activation_typeIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("license_activation_type")), m_License_activation_type));
+    }
+    if(m_Suspended_until_utcIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("suspended_until_utc")), m_Suspended_until_utc));
     }
     if(m_Created_date_utcIsSet)
     {
@@ -739,6 +761,12 @@ bool DeviceLicenseAssignmentDto::fromMultiPart(std::shared_ptr<MultipartFormData
         std::shared_ptr<LicenseActivationType> refVal_setLicenseActivationType;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("license_activation_type"))), refVal_setLicenseActivationType );
         setLicenseActivationType(refVal_setLicenseActivationType);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("suspended_until_utc"))))
+    {
+        utility::datetime refVal_setSuspendedUntilUtc;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("suspended_until_utc"))), refVal_setSuspendedUntilUtc );
+        setSuspendedUntilUtc(refVal_setSuspendedUntilUtc);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("created_date_utc"))))
     {
@@ -1217,6 +1245,27 @@ bool DeviceLicenseAssignmentDto::licenseActivationTypeIsSet() const
 void DeviceLicenseAssignmentDto::unsetLicense_activation_type()
 {
     m_License_activation_typeIsSet = false;
+}
+utility::datetime DeviceLicenseAssignmentDto::getSuspendedUntilUtc() const
+{
+    return m_Suspended_until_utc;
+}
+
+
+void DeviceLicenseAssignmentDto::setSuspendedUntilUtc(const utility::datetime& value)
+{
+    m_Suspended_until_utc = value;
+    m_Suspended_until_utcIsSet = true;
+}
+
+bool DeviceLicenseAssignmentDto::suspendedUntilUtcIsSet() const
+{
+    return m_Suspended_until_utcIsSet;
+}
+
+void DeviceLicenseAssignmentDto::unsetSuspended_until_utc()
+{
+    m_Suspended_until_utcIsSet = false;
 }
 utility::datetime DeviceLicenseAssignmentDto::getCreatedDateUtc() const
 {

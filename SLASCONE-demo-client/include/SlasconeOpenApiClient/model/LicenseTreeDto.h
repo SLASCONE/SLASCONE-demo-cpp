@@ -77,6 +77,11 @@ public:
     void unsetLegacy_license_key();
     void setLegacyLicenseKey(const utility::string_t& value);
 
+    utility::string_t getLicenseName() const;
+    bool licenseNameIsSet() const;
+    void unsetLicense_name();
+    void setLicenseName(const utility::string_t& value);
+
     bool isIsActive() const;
     bool isActiveIsSet() const;
     void unsetIs_active();
@@ -262,6 +267,9 @@ protected:
 
     utility::string_t m_Legacy_license_key;
     bool m_Legacy_license_keyIsSet;
+
+    utility::string_t m_License_name;
+    bool m_License_nameIsSet;
 
     bool m_Is_active;
     bool m_Is_activeIsSet;

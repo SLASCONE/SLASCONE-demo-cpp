@@ -172,6 +172,11 @@ public:
     void unsetLicense_activation_type();
     void setLicenseActivationType(const std::shared_ptr<LicenseActivationType>& value);
 
+    utility::datetime getSuspendedUntilUtc() const;
+    bool suspendedUntilUtcIsSet() const;
+    void unsetSuspended_until_utc();
+    void setSuspendedUntilUtc(const utility::datetime& value);
+
     utility::datetime getCreatedDateUtc() const;
     bool createdDateUtcIsSet() const;
     void unsetCreated_date_utc();
@@ -254,6 +259,9 @@ protected:
 
     std::shared_ptr<LicenseActivationType> m_License_activation_type;
     bool m_License_activation_typeIsSet;
+
+    utility::datetime m_Suspended_until_utc;
+    bool m_Suspended_until_utcIsSet;
 
     utility::datetime m_Created_date_utc;
     bool m_Created_date_utcIsSet;

@@ -163,6 +163,11 @@ public:
     void unsetIs_expiration_mode_adjustable();
     void setIsExpirationModeAdjustable(bool value);
 
+    bool isIsExpirationHidden() const;
+    bool isExpirationHiddenIsSet() const;
+    void unsetIs_expiration_hidden();
+    void setIsExpirationHidden(bool value);
+
     std::shared_ptr<ExpirationMode> getExpirationMode() const;
     bool expirationModeIsSet() const;
     void unsetExpiration_mode();
@@ -343,6 +348,9 @@ protected:
 
     bool m_Is_expiration_mode_adjustable;
     bool m_Is_expiration_mode_adjustableIsSet;
+
+    bool m_Is_expiration_hidden;
+    bool m_Is_expiration_hiddenIsSet;
 
     std::shared_ptr<ExpirationMode> m_Expiration_mode;
     bool m_Expiration_modeIsSet;

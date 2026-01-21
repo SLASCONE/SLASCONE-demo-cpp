@@ -26,6 +26,8 @@ LicenseTreeDto::LicenseTreeDto()
     m_DescriptionIsSet = false;
     m_Legacy_license_key = utility::conversions::to_string_t("");
     m_Legacy_license_keyIsSet = false;
+    m_License_name = utility::conversions::to_string_t("");
+    m_License_nameIsSet = false;
     m_Is_active = false;
     m_Is_activeIsSet = false;
     m_Is_software_release_valid = false;
@@ -118,6 +120,11 @@ web::json::value LicenseTreeDto::toJson() const
     {   
         
         val[utility::conversions::to_string_t(_XPLATSTR("legacy_license_key"))] = ModelBase::toJson(m_Legacy_license_key);
+    }
+    if(m_License_nameIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("license_name"))] = ModelBase::toJson(m_License_name);
     }
     if(m_Is_activeIsSet)
     {   
@@ -331,6 +338,17 @@ bool LicenseTreeDto::fromJson(const web::json::value& val)
             utility::string_t refVal_setLegacyLicenseKey;
             ok &= ModelBase::fromJson(fieldValue, refVal_setLegacyLicenseKey);
             setLegacyLicenseKey(refVal_setLegacyLicenseKey);
+            
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("license_name"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("license_name")));
+        if(!fieldValue.is_null())
+        {
+            utility::string_t refVal_setLicenseName;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setLicenseName);
+            setLicenseName(refVal_setLicenseName);
             
         }
     }
@@ -741,6 +759,10 @@ void LicenseTreeDto::toMultipart(std::shared_ptr<MultipartFormData> multipart, c
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("legacy_license_key")), m_Legacy_license_key));
     }
+    if(m_License_nameIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("license_name")), m_License_name));
+    }
     if(m_Is_activeIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_active")), m_Is_active));
@@ -909,6 +931,12 @@ bool LicenseTreeDto::fromMultiPart(std::shared_ptr<MultipartFormData> multipart,
         utility::string_t refVal_setLegacyLicenseKey;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("legacy_license_key"))), refVal_setLegacyLicenseKey );
         setLegacyLicenseKey(refVal_setLegacyLicenseKey);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("license_name"))))
+    {
+        utility::string_t refVal_setLicenseName;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("license_name"))), refVal_setLicenseName );
+        setLicenseName(refVal_setLicenseName);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_active"))))
     {
@@ -1186,6 +1214,27 @@ bool LicenseTreeDto::legacyLicenseKeyIsSet() const
 void LicenseTreeDto::unsetLegacy_license_key()
 {
     m_Legacy_license_keyIsSet = false;
+}
+utility::string_t LicenseTreeDto::getLicenseName() const
+{
+    return m_License_name;
+}
+
+
+void LicenseTreeDto::setLicenseName(const utility::string_t& value)
+{
+    m_License_name = value;
+    m_License_nameIsSet = true;
+}
+
+bool LicenseTreeDto::licenseNameIsSet() const
+{
+    return m_License_nameIsSet;
+}
+
+void LicenseTreeDto::unsetLicense_name()
+{
+    m_License_nameIsSet = false;
 }
 bool LicenseTreeDto::isIsActive() const
 {

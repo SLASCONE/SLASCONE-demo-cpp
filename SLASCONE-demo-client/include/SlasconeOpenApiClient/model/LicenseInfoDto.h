@@ -106,6 +106,11 @@ public:
     void unsetClient_id();
     void setClientId(const utility::string_t& value);
 
+    utility::string_t getClientName() const;
+    bool clientNameIsSet() const;
+    void unsetClient_name();
+    void setClientName(const utility::string_t& value);
+
     utility::string_t getClientDescription() const;
     bool clientDescriptionIsSet() const;
     void unsetClient_description();
@@ -280,6 +285,9 @@ protected:
 
     utility::string_t m_Client_id;
     bool m_Client_idIsSet;
+
+    utility::string_t m_Client_name;
+    bool m_Client_nameIsSet;
 
     utility::string_t m_Client_description;
     bool m_Client_descriptionIsSet;

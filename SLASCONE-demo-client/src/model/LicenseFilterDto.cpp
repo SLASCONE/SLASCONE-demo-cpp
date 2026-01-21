@@ -56,6 +56,8 @@ LicenseFilterDto::LicenseFilterDto()
     m_Is_group_validIsSet = false;
     m_Is_assigned_token = false;
     m_Is_assigned_tokenIsSet = false;
+    m_Is_suspended_token = false;
+    m_Is_suspended_tokenIsSet = false;
     m_Group_count_filter = 0;
     m_Group_count_filterIsSet = false;
     m_Group_count_mode = utility::conversions::to_string_t("");
@@ -190,6 +192,11 @@ web::json::value LicenseFilterDto::toJson() const
     {   
         
         val[utility::conversions::to_string_t(_XPLATSTR("is_assigned_token"))] = ModelBase::toJson(m_Is_assigned_token);
+    }
+    if(m_Is_suspended_tokenIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_suspended_token"))] = ModelBase::toJson(m_Is_suspended_token);
     }
     if(m_Group_count_filterIsSet)
     {   
@@ -480,6 +487,17 @@ bool LicenseFilterDto::fromJson(const web::json::value& val)
             
         }
     }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_suspended_token"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_suspended_token")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsSuspendedToken;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsSuspendedToken);
+            setIsSuspendedToken(refVal_setIsSuspendedToken);
+            
+        }
+    }
     if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("group_count_filter"))))
     {
         const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("group_count_filter")));
@@ -666,6 +684,10 @@ void LicenseFilterDto::toMultipart(std::shared_ptr<MultipartFormData> multipart,
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_assigned_token")), m_Is_assigned_token));
     }
+    if(m_Is_suspended_tokenIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_suspended_token")), m_Is_suspended_token));
+    }
     if(m_Group_count_filterIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("group_count_filter")), m_Group_count_filter));
@@ -840,6 +862,12 @@ bool LicenseFilterDto::fromMultiPart(std::shared_ptr<MultipartFormData> multipar
         bool refVal_setIsAssignedToken;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_assigned_token"))), refVal_setIsAssignedToken );
         setIsAssignedToken(refVal_setIsAssignedToken);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_suspended_token"))))
+    {
+        bool refVal_setIsSuspendedToken;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_suspended_token"))), refVal_setIsSuspendedToken );
+        setIsSuspendedToken(refVal_setIsSuspendedToken);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("group_count_filter"))))
     {
@@ -1345,6 +1373,26 @@ bool LicenseFilterDto::isAssignedTokenIsSet() const
 void LicenseFilterDto::unsetIs_assigned_token()
 {
     m_Is_assigned_tokenIsSet = false;
+}
+bool LicenseFilterDto::isIsSuspendedToken() const
+{
+    return m_Is_suspended_token;
+}
+
+void LicenseFilterDto::setIsSuspendedToken(bool value)
+{
+    m_Is_suspended_token = value;
+    m_Is_suspended_tokenIsSet = true;
+}
+
+bool LicenseFilterDto::isSuspendedTokenIsSet() const
+{
+    return m_Is_suspended_tokenIsSet;
+}
+
+void LicenseFilterDto::unsetIs_suspended_token()
+{
+    m_Is_suspended_tokenIsSet = false;
 }
 int32_t LicenseFilterDto::getGroupCountFilter() const
 {

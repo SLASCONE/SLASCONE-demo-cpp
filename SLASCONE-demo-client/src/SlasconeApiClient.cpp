@@ -132,7 +132,14 @@ pplx::task<web::http::http_response> SlasconeApiClient::callApi(
 				if (signatureHeaderMustBeValidated)
 				{
 					// Validate the response body with the x-slascone-signature header
-					validateSignature(body, signature);
+					if (0 == validateSignature(body, signature))
+					{
+						std::cout << "Response signature validation succeeded." << std::endl;
+					}
+					else
+					{
+						std::cerr << "Response signature validation failed." << std::endl;
+					}
 
 					// Get the x-nonce-signature header
 					std::string nonceSignature;
@@ -144,7 +151,14 @@ pplx::task<web::http::http_response> SlasconeApiClient::callApi(
 
 					// Validate the nonce with the x-nonce-signature header
 					std::vector<unsigned char> nonceVec(nonceBytes, nonceBytes + nonceSize);
-					validateSignature(nonceVec, nonceSignature);
+					if (0 == validateSignature(nonceVec, nonceSignature))
+					{
+						std::cout << "Nonce signature validation succeeded." << std::endl;
+					}
+					else
+					{
+						std::cerr << "Nonce signature validation failed." << std::endl;
+					}
 				}
 
 				if (licenseInfoMustBeStored)
@@ -209,7 +223,7 @@ int SlasconeApiClient::validateSignature(std::vector<unsigned char> body, std::s
 	}
 
 	// hexDump(body);
-	std::cout << "Signature: " << signature << std::endl;
+	// std::cout << "Signature: " << signature << std::endl;
 
 	// Decode the base64 encoded signature
 	std::vector<unsigned char> signatureVec = utility::conversions::from_base64(signature);

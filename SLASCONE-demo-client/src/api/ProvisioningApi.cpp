@@ -205,7 +205,7 @@ pplx::task<std::shared_ptr<LicenseInfoDto>> ProvisioningApi::activateLicense(uti
         return localVarResult;
     });
 }
-pplx::task<void> ProvisioningApi::activateOfflineLicense(utility::string_t isvId, boost::optional<utility::string_t> productId, boost::optional<utility::string_t> licenseKey, boost::optional<utility::string_t> clientId, boost::optional<utility::string_t> softwareVersion, boost::optional<std::vector<utility::string_t>> tags, boost::optional<utility::string_t> fileName) const
+pplx::task<void> ProvisioningApi::activateOfflineLicense(utility::string_t isvId, boost::optional<utility::string_t> productId, boost::optional<utility::string_t> licenseKey, boost::optional<utility::string_t> clientId, boost::optional<utility::string_t> clientName, boost::optional<utility::string_t> clientDescription, boost::optional<utility::string_t> softwareVersion, boost::optional<std::vector<utility::string_t>> tags, boost::optional<utility::string_t> fileName) const
 {
 
 
@@ -259,6 +259,14 @@ pplx::task<void> ProvisioningApi::activateOfflineLicense(utility::string_t isvId
     if (clientId)
     {
         localVarQueryParams[utility::conversions::to_string_t("client_id")] = ApiClient::parameterToString(*clientId);
+    }
+    if (clientName)
+    {
+        localVarQueryParams[utility::conversions::to_string_t("client_name")] = ApiClient::parameterToString(*clientName);
+    }
+    if (clientDescription)
+    {
+        localVarQueryParams[utility::conversions::to_string_t("client_description")] = ApiClient::parameterToString(*clientDescription);
     }
     if (softwareVersion)
     {

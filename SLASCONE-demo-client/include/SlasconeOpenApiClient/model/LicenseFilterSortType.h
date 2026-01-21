@@ -63,6 +63,7 @@ public:
         _6,
         _7,
         _8,
+        _9,
     };
 
     eLicenseFilterSortType getValue() const;
@@ -79,7 +80,8 @@ public:
         { eLicenseFilterSortType::_5, _XPLATSTR("_5") },
         { eLicenseFilterSortType::_6, _XPLATSTR("_6") },
         { eLicenseFilterSortType::_7, _XPLATSTR("_7") },
-        { eLicenseFilterSortType::_8, _XPLATSTR("_8") }
+        { eLicenseFilterSortType::_8, _XPLATSTR("_8") },
+        { eLicenseFilterSortType::_9, _XPLATSTR("_9") }
 };
         std::map<utility::string_t,eLicenseFilterSortType> strToEnumMap = {
         { _XPLATSTR("_0"), eLicenseFilterSortType::_0 },
@@ -90,7 +92,8 @@ public:
         { _XPLATSTR("_5"), eLicenseFilterSortType::_5 },
         { _XPLATSTR("_6"), eLicenseFilterSortType::_6 },
         { _XPLATSTR("_7"), eLicenseFilterSortType::_7 },
-        { _XPLATSTR("_8"), eLicenseFilterSortType::_8 }
+        { _XPLATSTR("_8"), eLicenseFilterSortType::_8 },
+        { _XPLATSTR("_9"), eLicenseFilterSortType::_9 }
 };
 
 };

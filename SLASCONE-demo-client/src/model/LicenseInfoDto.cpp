@@ -31,6 +31,8 @@ LicenseInfoDto::LicenseInfoDto()
     m_Legacy_license_keyIsSet = false;
     m_Client_id = utility::conversions::to_string_t("");
     m_Client_idIsSet = false;
+    m_Client_name = utility::conversions::to_string_t("");
+    m_Client_nameIsSet = false;
     m_Client_description = utility::conversions::to_string_t("");
     m_Client_descriptionIsSet = false;
     m_Product_name = utility::conversions::to_string_t("");
@@ -125,6 +127,11 @@ web::json::value LicenseInfoDto::toJson() const
     {   
         
         val[utility::conversions::to_string_t(_XPLATSTR("client_id"))] = ModelBase::toJson(m_Client_id);
+    }
+    if(m_Client_nameIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("client_name"))] = ModelBase::toJson(m_Client_name);
     }
     if(m_Client_descriptionIsSet)
     {   
@@ -351,6 +358,17 @@ bool LicenseInfoDto::fromJson(const web::json::value& val)
             utility::string_t refVal_setClientId;
             ok &= ModelBase::fromJson(fieldValue, refVal_setClientId);
             setClientId(refVal_setClientId);
+            
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("client_name"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("client_name")));
+        if(!fieldValue.is_null())
+        {
+            utility::string_t refVal_setClientName;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setClientName);
+            setClientName(refVal_setClientName);
             
         }
     }
@@ -729,6 +747,10 @@ void LicenseInfoDto::toMultipart(std::shared_ptr<MultipartFormData> multipart, c
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("client_id")), m_Client_id));
     }
+    if(m_Client_nameIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("client_name")), m_Client_name));
+    }
     if(m_Client_descriptionIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("client_description")), m_Client_description));
@@ -899,6 +921,12 @@ bool LicenseInfoDto::fromMultiPart(std::shared_ptr<MultipartFormData> multipart,
         utility::string_t refVal_setClientId;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("client_id"))), refVal_setClientId );
         setClientId(refVal_setClientId);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("client_name"))))
+    {
+        utility::string_t refVal_setClientName;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("client_name"))), refVal_setClientName );
+        setClientName(refVal_setClientName);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("client_description"))))
     {
@@ -1215,6 +1243,27 @@ bool LicenseInfoDto::clientIdIsSet() const
 void LicenseInfoDto::unsetClient_id()
 {
     m_Client_idIsSet = false;
+}
+utility::string_t LicenseInfoDto::getClientName() const
+{
+    return m_Client_name;
+}
+
+
+void LicenseInfoDto::setClientName(const utility::string_t& value)
+{
+    m_Client_name = value;
+    m_Client_nameIsSet = true;
+}
+
+bool LicenseInfoDto::clientNameIsSet() const
+{
+    return m_Client_nameIsSet;
+}
+
+void LicenseInfoDto::unsetClient_name()
+{
+    m_Client_nameIsSet = false;
 }
 utility::string_t LicenseInfoDto::getClientDescription() const
 {

@@ -685,7 +685,7 @@ pplx::task<std::shared_ptr<LicenseUserGroupDto>> LicenseApi::addLicenseUserGroup
         return localVarResult;
     });
 }
-pplx::task<int32_t> LicenseApi::closeAllSessionsAsync(utility::string_t isvId, utility::string_t licenseId, std::shared_ptr<CloseAllSessionsRequestDto> closeAllSessionsRequestDto) const
+pplx::task<void> LicenseApi::closeAllSessionsAsync(utility::string_t isvId, utility::string_t licenseId, std::shared_ptr<CloseAllSessionsRequestDto> closeAllSessionsRequestDto) const
 {
 
     // verify the required parameter 'closeAllSessionsRequestDto' is set
@@ -827,25 +827,7 @@ pplx::task<int32_t> LicenseApi::closeAllSessionsAsync(utility::string_t isvId, u
     })
     .then([=, this](utility::string_t localVarResponse)
     {
-        int32_t localVarResult(0);
-
-        if(localVarResponseHttpContentType == utility::conversions::to_string_t("application/json"))
-        {
-            web::json::value localVarJson = web::json::value::parse(localVarResponse);
-
-            ModelBase::fromJson(localVarJson, localVarResult);
-        }
-        // else if(localVarResponseHttpContentType == utility::conversions::to_string_t("multipart/form-data"))
-        // {
-        // TODO multipart response parsing
-        // }
-        else
-        {
-            throw ApiException(500
-                , utility::conversions::to_string_t("error calling closeAllSessionsAsync: unsupported response type"));
-        }
-
-        return localVarResult;
+        return void();
     });
 }
 pplx::task<std::shared_ptr<LicenseDto>> LicenseApi::deleteLicense(utility::string_t isvId, utility::string_t licenseId) const
@@ -2163,7 +2145,7 @@ pplx::task<std::vector<std::shared_ptr<ConsumptionBalanceDto>>> LicenseApi::getC
         return localVarResult;
     });
 }
-pplx::task<std::shared_ptr<ConsumptionHeartbeatLazyLoadDto>> LicenseApi::getConsumptionHeartbeats(utility::string_t isvId, utility::string_t licenseId, boost::optional<utility::datetime> dateFrom, boost::optional<utility::datetime> dateTo, boost::optional<std::vector<utility::string_t>> limitations) const
+pplx::task<std::shared_ptr<ConsumptionHeartbeatLazyLoadDto>> LicenseApi::getConsumptionHeartbeats(utility::string_t isvId, utility::string_t licenseId, boost::optional<utility::string_t> transactionId, boost::optional<utility::string_t> userId, boost::optional<utility::string_t> clientId, boost::optional<utility::datetime> dateFrom, boost::optional<utility::datetime> dateTo, boost::optional<std::vector<utility::string_t>> limitations) const
 {
 
 
@@ -2206,6 +2188,18 @@ pplx::task<std::shared_ptr<ConsumptionHeartbeatLazyLoadDto>> LicenseApi::getCons
 
     std::unordered_set<utility::string_t> localVarConsumeHttpContentTypes;
 
+    if (transactionId)
+    {
+        localVarQueryParams[utility::conversions::to_string_t("transaction_id")] = ApiClient::parameterToString(*transactionId);
+    }
+    if (userId)
+    {
+        localVarQueryParams[utility::conversions::to_string_t("user_id")] = ApiClient::parameterToString(*userId);
+    }
+    if (clientId)
+    {
+        localVarQueryParams[utility::conversions::to_string_t("client_id")] = ApiClient::parameterToString(*clientId);
+    }
     if (dateFrom)
     {
         localVarQueryParams[utility::conversions::to_string_t("date_from")] = ApiClient::parameterToString(*dateFrom);

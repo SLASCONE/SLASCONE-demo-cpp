@@ -30,6 +30,10 @@ TemplateFeatureDto::TemplateFeatureDto()
     m_Is_adjustableIsSet = false;
     m_Is_active = false;
     m_Is_activeIsSet = false;
+    m_Is_hidden = false;
+    m_Is_hiddenIsSet = false;
+    m_Is_customer_portal_hidden = false;
+    m_Is_customer_portal_hiddenIsSet = false;
 }
 
 TemplateFeatureDto::~TemplateFeatureDto()
@@ -68,6 +72,16 @@ web::json::value TemplateFeatureDto::toJson() const
     {   
         
         val[utility::conversions::to_string_t(_XPLATSTR("is_active"))] = ModelBase::toJson(m_Is_active);
+    }
+    if(m_Is_hiddenIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_hidden"))] = ModelBase::toJson(m_Is_hidden);
+    }
+    if(m_Is_customer_portal_hiddenIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))] = ModelBase::toJson(m_Is_customer_portal_hidden);
     }
 
     return val;
@@ -131,6 +145,28 @@ bool TemplateFeatureDto::fromJson(const web::json::value& val)
             
         }
     }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_hidden")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsHidden;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsHidden);
+            setIsHidden(refVal_setIsHidden);
+            
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsCustomerPortalHidden;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsCustomerPortalHidden);
+            setIsCustomerPortalHidden(refVal_setIsCustomerPortalHidden);
+            
+        }
+    }
     return ok;
 }
 
@@ -160,6 +196,14 @@ void TemplateFeatureDto::toMultipart(std::shared_ptr<MultipartFormData> multipar
     if(m_Is_activeIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_active")), m_Is_active));
+    }
+    if(m_Is_hiddenIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_hidden")), m_Is_hidden));
+    }
+    if(m_Is_customer_portal_hiddenIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden")), m_Is_customer_portal_hidden));
     }
 }
 
@@ -201,6 +245,18 @@ bool TemplateFeatureDto::fromMultiPart(std::shared_ptr<MultipartFormData> multip
         bool refVal_setIsActive;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_active"))), refVal_setIsActive );
         setIsActive(refVal_setIsActive);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))))
+    {
+        bool refVal_setIsHidden;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))), refVal_setIsHidden );
+        setIsHidden(refVal_setIsHidden);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))))
+    {
+        bool refVal_setIsCustomerPortalHidden;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))), refVal_setIsCustomerPortalHidden );
+        setIsCustomerPortalHidden(refVal_setIsCustomerPortalHidden);
     }
     return ok;
 }
@@ -308,6 +364,46 @@ bool TemplateFeatureDto::isActiveIsSet() const
 void TemplateFeatureDto::unsetIs_active()
 {
     m_Is_activeIsSet = false;
+}
+bool TemplateFeatureDto::isIsHidden() const
+{
+    return m_Is_hidden;
+}
+
+void TemplateFeatureDto::setIsHidden(bool value)
+{
+    m_Is_hidden = value;
+    m_Is_hiddenIsSet = true;
+}
+
+bool TemplateFeatureDto::isHiddenIsSet() const
+{
+    return m_Is_hiddenIsSet;
+}
+
+void TemplateFeatureDto::unsetIs_hidden()
+{
+    m_Is_hiddenIsSet = false;
+}
+bool TemplateFeatureDto::isIsCustomerPortalHidden() const
+{
+    return m_Is_customer_portal_hidden;
+}
+
+void TemplateFeatureDto::setIsCustomerPortalHidden(bool value)
+{
+    m_Is_customer_portal_hidden = value;
+    m_Is_customer_portal_hiddenIsSet = true;
+}
+
+bool TemplateFeatureDto::isCustomerPortalHiddenIsSet() const
+{
+    return m_Is_customer_portal_hiddenIsSet;
+}
+
+void TemplateFeatureDto::unsetIs_customer_portal_hidden()
+{
+    m_Is_customer_portal_hiddenIsSet = false;
 }
 
 }

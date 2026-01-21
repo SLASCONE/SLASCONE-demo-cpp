@@ -168,6 +168,11 @@ public:
     void unsetIs_assigned_token();
     void setIsAssignedToken(bool value);
 
+    bool isIsSuspendedToken() const;
+    bool isSuspendedTokenIsSet() const;
+    void unsetIs_suspended_token();
+    void setIsSuspendedToken(bool value);
+
     int32_t getGroupCountFilter() const;
     bool groupCountFilterIsSet() const;
     void unsetGroup_count_filter();
@@ -275,6 +280,9 @@ protected:
 
     bool m_Is_assigned_token;
     bool m_Is_assigned_tokenIsSet;
+
+    bool m_Is_suspended_token;
+    bool m_Is_suspended_tokenIsSet;
 
     int32_t m_Group_count_filter;
     bool m_Group_count_filterIsSet;

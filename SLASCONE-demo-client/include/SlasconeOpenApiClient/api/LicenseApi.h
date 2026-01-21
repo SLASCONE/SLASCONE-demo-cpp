@@ -69,7 +69,7 @@ public:
     /// Creates a license
     /// </summary>
     /// <remarks>
-    /// 
+    /// Sample request:                  GET /api/customers/123
     /// </remarks>
     /// <param name="isvId"></param>
     /// <param name="licenseDto"></param>
@@ -126,7 +126,7 @@ public:
     /// <param name="isvId"></param>
     /// <param name="licenseId"></param>
     /// <param name="closeAllSessionsRequestDto"></param>
-    pplx::task<int32_t> closeAllSessionsAsync(
+    pplx::task<void> closeAllSessionsAsync(
         utility::string_t isvId,
         utility::string_t licenseId,
         std::shared_ptr<CloseAllSessionsRequestDto> closeAllSessionsRequestDto
@@ -261,12 +261,18 @@ public:
     /// </remarks>
     /// <param name="isvId"></param>
     /// <param name="licenseId"></param>
+    /// <param name="transactionId"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
+    /// <param name="userId"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
+    /// <param name="clientId"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
     /// <param name="dateFrom"> (optional, default to utility::datetime())</param>
     /// <param name="dateTo"> (optional, default to utility::datetime())</param>
     /// <param name="limitations"> (optional, default to std::vector&lt;std::shared_ptr&lt;utility::string_t&gt;&gt;())</param>
     pplx::task<std::shared_ptr<ConsumptionHeartbeatLazyLoadDto>> getConsumptionHeartbeats(
         utility::string_t isvId,
         utility::string_t licenseId,
+        boost::optional<utility::string_t> transactionId,
+        boost::optional<utility::string_t> userId,
+        boost::optional<utility::string_t> clientId,
         boost::optional<utility::datetime> dateFrom,
         boost::optional<utility::datetime> dateTo,
         boost::optional<std::vector<utility::string_t>> limitations

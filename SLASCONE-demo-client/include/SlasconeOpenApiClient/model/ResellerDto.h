@@ -21,6 +21,7 @@
 
 #include "SlasconeOpenApiClient/ModelBase.h"
 
+#include "SlasconeOpenApiClient/model/ResellerSettingsDto.h"
 #include "SlasconeOpenApiClient/model/ResourceDto.h"
 #include <cpprest/details/basic_types.h>
 #include "SlasconeOpenApiClient/model/ResellerContactDto.h"
@@ -35,6 +36,7 @@ namespace model {
 class ResourceDto;
 class ResellerTypeDto;
 class ResellerContactDto;
+class ResellerSettingsDto;
 
 
 class  ResellerDto
@@ -135,6 +137,11 @@ public:
     void unsetReseller_contacts();
     void setResellerContacts(const std::vector<std::shared_ptr<ResellerContactDto>>& value);
 
+    std::shared_ptr<ResellerSettingsDto> getResellerSettings() const;
+    bool resellerSettingsIsSet() const;
+    void unsetReseller_settings();
+    void setResellerSettings(const std::shared_ptr<ResellerSettingsDto>& value);
+
     utility::string_t getLastModifiedBy() const;
     bool lastModifiedByIsSet() const;
     void unsetLast_modified_by();
@@ -196,6 +203,9 @@ protected:
 
     std::vector<std::shared_ptr<ResellerContactDto>> m_Reseller_contacts;
     bool m_Reseller_contactsIsSet;
+
+    std::shared_ptr<ResellerSettingsDto> m_Reseller_settings;
+    bool m_Reseller_settingsIsSet;
 
     utility::string_t m_Last_modified_by;
     bool m_Last_modified_byIsSet;

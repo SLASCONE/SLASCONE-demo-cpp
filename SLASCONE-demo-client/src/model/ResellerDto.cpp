@@ -47,6 +47,7 @@ ResellerDto::ResellerDto()
     m_Reseller_type_idIsSet = false;
     m_Reseller_typeIsSet = false;
     m_Reseller_contactsIsSet = false;
+    m_Reseller_settingsIsSet = false;
     m_Last_modified_by = utility::conversions::to_string_t("");
     m_Last_modified_byIsSet = false;
     m_Modified_date_utc = utility::datetime();
@@ -141,6 +142,11 @@ web::json::value ResellerDto::toJson() const
     {   
         
         val[utility::conversions::to_string_t(_XPLATSTR("reseller_contacts"))] = ModelBase::toJson(m_Reseller_contacts);
+    }
+    if(m_Reseller_settingsIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("reseller_settings"))] = ModelBase::toJson(m_Reseller_settings);
     }
     if(m_Last_modified_byIsSet)
     {   
@@ -329,6 +335,17 @@ bool ResellerDto::fromJson(const web::json::value& val)
             
         }
     }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("reseller_settings"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("reseller_settings")));
+        if(!fieldValue.is_null())
+        {
+            std::shared_ptr<ResellerSettingsDto> refVal_setResellerSettings;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setResellerSettings);
+            setResellerSettings(refVal_setResellerSettings);
+            
+        }
+    }
     if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("last_modified_by"))))
     {
         const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("last_modified_by")));
@@ -431,6 +448,10 @@ void ResellerDto::toMultipart(std::shared_ptr<MultipartFormData> multipart, cons
     if(m_Reseller_contactsIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("reseller_contacts")), m_Reseller_contacts));
+    }
+    if(m_Reseller_settingsIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("reseller_settings")), m_Reseller_settings));
     }
     if(m_Last_modified_byIsSet)
     {
@@ -544,6 +565,12 @@ bool ResellerDto::fromMultiPart(std::shared_ptr<MultipartFormData> multipart, co
         std::vector<std::shared_ptr<ResellerContactDto>> refVal_setResellerContacts;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("reseller_contacts"))), refVal_setResellerContacts );
         setResellerContacts(refVal_setResellerContacts);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("reseller_settings"))))
+    {
+        std::shared_ptr<ResellerSettingsDto> refVal_setResellerSettings;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("reseller_settings"))), refVal_setResellerSettings );
+        setResellerSettings(refVal_setResellerSettings);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("last_modified_by"))))
     {
@@ -879,6 +906,27 @@ bool ResellerDto::resellerContactsIsSet() const
 void ResellerDto::unsetReseller_contacts()
 {
     m_Reseller_contactsIsSet = false;
+}
+std::shared_ptr<ResellerSettingsDto> ResellerDto::getResellerSettings() const
+{
+    return m_Reseller_settings;
+}
+
+
+void ResellerDto::setResellerSettings(const std::shared_ptr<ResellerSettingsDto>& value)
+{
+    m_Reseller_settings = value;
+    m_Reseller_settingsIsSet = true;
+}
+
+bool ResellerDto::resellerSettingsIsSet() const
+{
+    return m_Reseller_settingsIsSet;
+}
+
+void ResellerDto::unsetReseller_settings()
+{
+    m_Reseller_settingsIsSet = false;
 }
 utility::string_t ResellerDto::getLastModifiedBy() const
 {

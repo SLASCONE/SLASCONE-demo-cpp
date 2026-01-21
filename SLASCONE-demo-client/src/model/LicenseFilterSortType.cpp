@@ -44,6 +44,8 @@ LicenseFilterSortType::eLicenseFilterSortType toEnum(const EnumUnderlyingType& v
         return LicenseFilterSortType::eLicenseFilterSortType::_7;
     case 8:
         return LicenseFilterSortType::eLicenseFilterSortType::_8;
+    case 9:
+        return LicenseFilterSortType::eLicenseFilterSortType::_9;
     default:
         break;
     }
@@ -72,6 +74,8 @@ EnumUnderlyingType fromEnum(LicenseFilterSortType::eLicenseFilterSortType e)
         return 7;
     case LicenseFilterSortType::eLicenseFilterSortType::_8:
         return 8;
+    case LicenseFilterSortType::eLicenseFilterSortType::_9:
+        return 9;
     default:
         break;
     }

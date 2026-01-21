@@ -74,6 +74,16 @@ public:
     void unsetIs_adjustable();
     void setIsAdjustable(bool value);
 
+    bool isIsHidden() const;
+    bool isHiddenIsSet() const;
+    void unsetIs_hidden();
+    void setIsHidden(bool value);
+
+    bool isIsCustomerPortalHidden() const;
+    bool isCustomerPortalHiddenIsSet() const;
+    void unsetIs_customer_portal_hidden();
+    void setIsCustomerPortalHidden(bool value);
+
     std::vector<utility::string_t> getValues() const;
     bool valuesIsSet() const;
     void unsetValues();
@@ -92,6 +102,12 @@ protected:
 
     bool m_Is_adjustable;
     bool m_Is_adjustableIsSet;
+
+    bool m_Is_hidden;
+    bool m_Is_hiddenIsSet;
+
+    bool m_Is_customer_portal_hidden;
+    bool m_Is_customer_portal_hiddenIsSet;
 
     std::vector<utility::string_t> m_Values;
     bool m_ValuesIsSet;

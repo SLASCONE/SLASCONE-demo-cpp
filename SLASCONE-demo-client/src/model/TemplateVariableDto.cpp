@@ -28,6 +28,12 @@ TemplateVariableDto::TemplateVariableDto()
     m_Variable_nameIsSet = false;
     m_Is_adjustable = false;
     m_Is_adjustableIsSet = false;
+    m_Is_required = false;
+    m_Is_requiredIsSet = false;
+    m_Is_hidden = false;
+    m_Is_hiddenIsSet = false;
+    m_Is_customer_portal_hidden = false;
+    m_Is_customer_portal_hiddenIsSet = false;
     m_Value = utility::conversions::to_string_t("");
     m_ValueIsSet = false;
 }
@@ -63,6 +69,21 @@ web::json::value TemplateVariableDto::toJson() const
     {   
         
         val[utility::conversions::to_string_t(_XPLATSTR("is_adjustable"))] = ModelBase::toJson(m_Is_adjustable);
+    }
+    if(m_Is_requiredIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_required"))] = ModelBase::toJson(m_Is_required);
+    }
+    if(m_Is_hiddenIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_hidden"))] = ModelBase::toJson(m_Is_hidden);
+    }
+    if(m_Is_customer_portal_hiddenIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))] = ModelBase::toJson(m_Is_customer_portal_hidden);
     }
     if(m_ValueIsSet)
     {   
@@ -120,6 +141,39 @@ bool TemplateVariableDto::fromJson(const web::json::value& val)
             
         }
     }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_required"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_required")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsRequired;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsRequired);
+            setIsRequired(refVal_setIsRequired);
+            
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_hidden")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsHidden;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsHidden);
+            setIsHidden(refVal_setIsHidden);
+            
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsCustomerPortalHidden;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsCustomerPortalHidden);
+            setIsCustomerPortalHidden(refVal_setIsCustomerPortalHidden);
+            
+        }
+    }
     if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("value"))))
     {
         const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("value")));
@@ -156,6 +210,18 @@ void TemplateVariableDto::toMultipart(std::shared_ptr<MultipartFormData> multipa
     if(m_Is_adjustableIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_adjustable")), m_Is_adjustable));
+    }
+    if(m_Is_requiredIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_required")), m_Is_required));
+    }
+    if(m_Is_hiddenIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_hidden")), m_Is_hidden));
+    }
+    if(m_Is_customer_portal_hiddenIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden")), m_Is_customer_portal_hidden));
     }
     if(m_ValueIsSet)
     {
@@ -195,6 +261,24 @@ bool TemplateVariableDto::fromMultiPart(std::shared_ptr<MultipartFormData> multi
         bool refVal_setIsAdjustable;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_adjustable"))), refVal_setIsAdjustable );
         setIsAdjustable(refVal_setIsAdjustable);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_required"))))
+    {
+        bool refVal_setIsRequired;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_required"))), refVal_setIsRequired );
+        setIsRequired(refVal_setIsRequired);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))))
+    {
+        bool refVal_setIsHidden;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))), refVal_setIsHidden );
+        setIsHidden(refVal_setIsHidden);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))))
+    {
+        bool refVal_setIsCustomerPortalHidden;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))), refVal_setIsCustomerPortalHidden );
+        setIsCustomerPortalHidden(refVal_setIsCustomerPortalHidden);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("value"))))
     {
@@ -288,6 +372,66 @@ bool TemplateVariableDto::isAdjustableIsSet() const
 void TemplateVariableDto::unsetIs_adjustable()
 {
     m_Is_adjustableIsSet = false;
+}
+bool TemplateVariableDto::isIsRequired() const
+{
+    return m_Is_required;
+}
+
+void TemplateVariableDto::setIsRequired(bool value)
+{
+    m_Is_required = value;
+    m_Is_requiredIsSet = true;
+}
+
+bool TemplateVariableDto::isRequiredIsSet() const
+{
+    return m_Is_requiredIsSet;
+}
+
+void TemplateVariableDto::unsetIs_required()
+{
+    m_Is_requiredIsSet = false;
+}
+bool TemplateVariableDto::isIsHidden() const
+{
+    return m_Is_hidden;
+}
+
+void TemplateVariableDto::setIsHidden(bool value)
+{
+    m_Is_hidden = value;
+    m_Is_hiddenIsSet = true;
+}
+
+bool TemplateVariableDto::isHiddenIsSet() const
+{
+    return m_Is_hiddenIsSet;
+}
+
+void TemplateVariableDto::unsetIs_hidden()
+{
+    m_Is_hiddenIsSet = false;
+}
+bool TemplateVariableDto::isIsCustomerPortalHidden() const
+{
+    return m_Is_customer_portal_hidden;
+}
+
+void TemplateVariableDto::setIsCustomerPortalHidden(bool value)
+{
+    m_Is_customer_portal_hidden = value;
+    m_Is_customer_portal_hiddenIsSet = true;
+}
+
+bool TemplateVariableDto::isCustomerPortalHiddenIsSet() const
+{
+    return m_Is_customer_portal_hiddenIsSet;
+}
+
+void TemplateVariableDto::unsetIs_customer_portal_hidden()
+{
+    m_Is_customer_portal_hiddenIsSet = false;
 }
 utility::string_t TemplateVariableDto::getValue() const
 {

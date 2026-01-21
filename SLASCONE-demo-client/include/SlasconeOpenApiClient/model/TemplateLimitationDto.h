@@ -114,6 +114,16 @@ public:
     void unsetConsumption_balance_mode();
     void setConsumptionBalanceMode(const std::shared_ptr<ConsumptionBalanceMode>& value);
 
+    bool isIsHidden() const;
+    bool isHiddenIsSet() const;
+    void unsetIs_hidden();
+    void setIsHidden(bool value);
+
+    bool isIsCustomerPortalHidden() const;
+    bool isCustomerPortalHiddenIsSet() const;
+    void unsetIs_customer_portal_hidden();
+    void setIsCustomerPortalHidden(bool value);
+
     std::vector<std::shared_ptr<TemplateLimitationAlertDto>> getAlerts() const;
     bool alertsIsSet() const;
     void unsetAlerts();
@@ -153,6 +163,12 @@ protected:
 
     std::shared_ptr<ConsumptionBalanceMode> m_Consumption_balance_mode;
     bool m_Consumption_balance_modeIsSet;
+
+    bool m_Is_hidden;
+    bool m_Is_hiddenIsSet;
+
+    bool m_Is_customer_portal_hidden;
+    bool m_Is_customer_portal_hiddenIsSet;
 
     std::vector<std::shared_ptr<TemplateLimitationAlertDto>> m_Alerts;
     bool m_AlertsIsSet;

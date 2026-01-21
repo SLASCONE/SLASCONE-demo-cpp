@@ -40,6 +40,10 @@ TemplateLimitationDto::TemplateLimitationDto()
     m_User_provisioning = false;
     m_User_provisioningIsSet = false;
     m_Consumption_balance_modeIsSet = false;
+    m_Is_hidden = false;
+    m_Is_hiddenIsSet = false;
+    m_Is_customer_portal_hidden = false;
+    m_Is_customer_portal_hiddenIsSet = false;
     m_AlertsIsSet = false;
 }
 
@@ -109,6 +113,16 @@ web::json::value TemplateLimitationDto::toJson() const
     {   
         
         val[utility::conversions::to_string_t(_XPLATSTR("consumption_balance_mode"))] = ModelBase::toJson(m_Consumption_balance_mode);
+    }
+    if(m_Is_hiddenIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_hidden"))] = ModelBase::toJson(m_Is_hidden);
+    }
+    if(m_Is_customer_portal_hiddenIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))] = ModelBase::toJson(m_Is_customer_portal_hidden);
     }
     if(m_AlertsIsSet)
     {   
@@ -243,6 +257,28 @@ bool TemplateLimitationDto::fromJson(const web::json::value& val)
             
         }
     }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_hidden")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsHidden;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsHidden);
+            setIsHidden(refVal_setIsHidden);
+            
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsCustomerPortalHidden;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsCustomerPortalHidden);
+            setIsCustomerPortalHidden(refVal_setIsCustomerPortalHidden);
+            
+        }
+    }
     if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("alerts"))))
     {
         const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("alerts")));
@@ -307,6 +343,14 @@ void TemplateLimitationDto::toMultipart(std::shared_ptr<MultipartFormData> multi
     if(m_Consumption_balance_modeIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("consumption_balance_mode")), m_Consumption_balance_mode));
+    }
+    if(m_Is_hiddenIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_hidden")), m_Is_hidden));
+    }
+    if(m_Is_customer_portal_hiddenIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden")), m_Is_customer_portal_hidden));
     }
     if(m_AlertsIsSet)
     {
@@ -388,6 +432,18 @@ bool TemplateLimitationDto::fromMultiPart(std::shared_ptr<MultipartFormData> mul
         std::shared_ptr<ConsumptionBalanceMode> refVal_setConsumptionBalanceMode;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("consumption_balance_mode"))), refVal_setConsumptionBalanceMode );
         setConsumptionBalanceMode(refVal_setConsumptionBalanceMode);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))))
+    {
+        bool refVal_setIsHidden;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_hidden"))), refVal_setIsHidden );
+        setIsHidden(refVal_setIsHidden);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))))
+    {
+        bool refVal_setIsCustomerPortalHidden;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_customer_portal_hidden"))), refVal_setIsCustomerPortalHidden );
+        setIsCustomerPortalHidden(refVal_setIsCustomerPortalHidden);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("alerts"))))
     {
@@ -623,6 +679,46 @@ bool TemplateLimitationDto::consumptionBalanceModeIsSet() const
 void TemplateLimitationDto::unsetConsumption_balance_mode()
 {
     m_Consumption_balance_modeIsSet = false;
+}
+bool TemplateLimitationDto::isIsHidden() const
+{
+    return m_Is_hidden;
+}
+
+void TemplateLimitationDto::setIsHidden(bool value)
+{
+    m_Is_hidden = value;
+    m_Is_hiddenIsSet = true;
+}
+
+bool TemplateLimitationDto::isHiddenIsSet() const
+{
+    return m_Is_hiddenIsSet;
+}
+
+void TemplateLimitationDto::unsetIs_hidden()
+{
+    m_Is_hiddenIsSet = false;
+}
+bool TemplateLimitationDto::isIsCustomerPortalHidden() const
+{
+    return m_Is_customer_portal_hidden;
+}
+
+void TemplateLimitationDto::setIsCustomerPortalHidden(bool value)
+{
+    m_Is_customer_portal_hidden = value;
+    m_Is_customer_portal_hiddenIsSet = true;
+}
+
+bool TemplateLimitationDto::isCustomerPortalHiddenIsSet() const
+{
+    return m_Is_customer_portal_hiddenIsSet;
+}
+
+void TemplateLimitationDto::unsetIs_customer_portal_hidden()
+{
+    m_Is_customer_portal_hiddenIsSet = false;
 }
 std::vector<std::shared_ptr<TemplateLimitationAlertDto>> TemplateLimitationDto::getAlerts() const
 {

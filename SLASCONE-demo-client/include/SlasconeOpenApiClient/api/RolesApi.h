@@ -26,6 +26,7 @@
 #include "SlasconeOpenApiClient/model/ProblemDetails.h"
 #include "SlasconeOpenApiClient/model/UserRoleContextDto.h"
 #include "SlasconeOpenApiClient/model/UserRolesDto.h"
+#include <cpprest/details/basic_types.h>
 #include <boost/optional.hpp>
 
 namespace org {
@@ -51,7 +52,17 @@ public:
     /// <remarks>
     /// 
     /// </remarks>
+    pplx::task<std::shared_ptr<UserRolesDto>> get_all_user_roles_and_last_active_context(
+    ) const;
+    /// <summary>
+    /// Get user roles and last active context for the authenticated user.
+    /// </summary>
+    /// <remarks>
+    /// 
+    /// </remarks>
+    /// <param name="isvId"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
     pplx::task<std::shared_ptr<UserRolesDto>> get_user_roles_and_last_active_context(
+        boost::optional<utility::string_t> isvId
     ) const;
     /// <summary>
     /// Get user role for the authenticated user in the specified ISV context.

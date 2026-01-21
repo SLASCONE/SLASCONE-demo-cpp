@@ -93,6 +93,8 @@ public:
     /// <param name="productId"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
     /// <param name="licenseKey"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
     /// <param name="clientId"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
+    /// <param name="clientName"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
+    /// <param name="clientDescription"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
     /// <param name="softwareVersion"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
     /// <param name="tags"> (optional, default to std::vector&lt;std::shared_ptr&lt;utility::string_t&gt;&gt;())</param>
     /// <param name="fileName"> (optional, default to utility::conversions::to_string_t(&quot;&quot;))</param>
@@ -101,6 +103,8 @@ public:
         boost::optional<utility::string_t> productId,
         boost::optional<utility::string_t> licenseKey,
         boost::optional<utility::string_t> clientId,
+        boost::optional<utility::string_t> clientName,
+        boost::optional<utility::string_t> clientDescription,
         boost::optional<utility::string_t> softwareVersion,
         boost::optional<std::vector<utility::string_t>> tags,
         boost::optional<utility::string_t> fileName

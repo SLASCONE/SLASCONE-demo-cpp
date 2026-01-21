@@ -73,6 +73,21 @@ public:
     void unsetIs_adjustable();
     void setIsAdjustable(bool value);
 
+    bool isIsRequired() const;
+    bool isRequiredIsSet() const;
+    void unsetIs_required();
+    void setIsRequired(bool value);
+
+    bool isIsHidden() const;
+    bool isHiddenIsSet() const;
+    void unsetIs_hidden();
+    void setIsHidden(bool value);
+
+    bool isIsCustomerPortalHidden() const;
+    bool isCustomerPortalHiddenIsSet() const;
+    void unsetIs_customer_portal_hidden();
+    void setIsCustomerPortalHidden(bool value);
+
     utility::string_t getValue() const;
     bool valueIsSet() const;
     void unsetValue();
@@ -91,6 +106,15 @@ protected:
 
     bool m_Is_adjustable;
     bool m_Is_adjustableIsSet;
+
+    bool m_Is_required;
+    bool m_Is_requiredIsSet;
+
+    bool m_Is_hidden;
+    bool m_Is_hiddenIsSet;
+
+    bool m_Is_customer_portal_hidden;
+    bool m_Is_customer_portal_hiddenIsSet;
 
     utility::string_t m_Value;
     bool m_ValueIsSet;

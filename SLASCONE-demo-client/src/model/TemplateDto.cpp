@@ -55,6 +55,8 @@ TemplateDto::TemplateDto()
     m_Allows_invalid_software_releaseIsSet = false;
     m_Is_expiration_mode_adjustable = false;
     m_Is_expiration_mode_adjustableIsSet = false;
+    m_Is_expiration_hidden = false;
+    m_Is_expiration_hiddenIsSet = false;
     m_Expiration_modeIsSet = false;
     m_Expiration_date_utc = utility::datetime();
     m_Expiration_date_utcIsSet = false;
@@ -197,6 +199,11 @@ web::json::value TemplateDto::toJson() const
     {   
         
         val[utility::conversions::to_string_t(_XPLATSTR("is_expiration_mode_adjustable"))] = ModelBase::toJson(m_Is_expiration_mode_adjustable);
+    }
+    if(m_Is_expiration_hiddenIsSet)
+    {   
+        
+        val[utility::conversions::to_string_t(_XPLATSTR("is_expiration_hidden"))] = ModelBase::toJson(m_Is_expiration_hidden);
     }
     if(m_Expiration_modeIsSet)
     {   
@@ -525,6 +532,17 @@ bool TemplateDto::fromJson(const web::json::value& val)
             bool refVal_setIsExpirationModeAdjustable;
             ok &= ModelBase::fromJson(fieldValue, refVal_setIsExpirationModeAdjustable);
             setIsExpirationModeAdjustable(refVal_setIsExpirationModeAdjustable);
+            
+        }
+    }
+    if(val.has_field(utility::conversions::to_string_t(_XPLATSTR("is_expiration_hidden"))))
+    {
+        const web::json::value& fieldValue = val.at(utility::conversions::to_string_t(_XPLATSTR("is_expiration_hidden")));
+        if(!fieldValue.is_null())
+        {
+            bool refVal_setIsExpirationHidden;
+            ok &= ModelBase::fromJson(fieldValue, refVal_setIsExpirationHidden);
+            setIsExpirationHidden(refVal_setIsExpirationHidden);
             
         }
     }
@@ -885,6 +903,10 @@ void TemplateDto::toMultipart(std::shared_ptr<MultipartFormData> multipart, cons
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_expiration_mode_adjustable")), m_Is_expiration_mode_adjustable));
     }
+    if(m_Is_expiration_hiddenIsSet)
+    {
+        multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("is_expiration_hidden")), m_Is_expiration_hidden));
+    }
     if(m_Expiration_modeIsSet)
     {
         multipart->add(ModelBase::toHttpContent(namePrefix + utility::conversions::to_string_t(_XPLATSTR("expiration_mode")), m_Expiration_mode));
@@ -1103,6 +1125,12 @@ bool TemplateDto::fromMultiPart(std::shared_ptr<MultipartFormData> multipart, co
         bool refVal_setIsExpirationModeAdjustable;
         ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_expiration_mode_adjustable"))), refVal_setIsExpirationModeAdjustable );
         setIsExpirationModeAdjustable(refVal_setIsExpirationModeAdjustable);
+    }
+    if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("is_expiration_hidden"))))
+    {
+        bool refVal_setIsExpirationHidden;
+        ok &= ModelBase::fromHttpContent(multipart->getContent(utility::conversions::to_string_t(_XPLATSTR("is_expiration_hidden"))), refVal_setIsExpirationHidden );
+        setIsExpirationHidden(refVal_setIsExpirationHidden);
     }
     if(multipart->hasContent(utility::conversions::to_string_t(_XPLATSTR("expiration_mode"))))
     {
@@ -1626,6 +1654,26 @@ bool TemplateDto::isExpirationModeAdjustableIsSet() const
 void TemplateDto::unsetIs_expiration_mode_adjustable()
 {
     m_Is_expiration_mode_adjustableIsSet = false;
+}
+bool TemplateDto::isIsExpirationHidden() const
+{
+    return m_Is_expiration_hidden;
+}
+
+void TemplateDto::setIsExpirationHidden(bool value)
+{
+    m_Is_expiration_hidden = value;
+    m_Is_expiration_hiddenIsSet = true;
+}
+
+bool TemplateDto::isExpirationHiddenIsSet() const
+{
+    return m_Is_expiration_hiddenIsSet;
+}
+
+void TemplateDto::unsetIs_expiration_hidden()
+{
+    m_Is_expiration_hiddenIsSet = false;
 }
 std::shared_ptr<ExpirationMode> TemplateDto::getExpirationMode() const
 {
