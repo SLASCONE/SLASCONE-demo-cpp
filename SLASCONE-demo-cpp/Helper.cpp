@@ -70,6 +70,11 @@ Helper::Helper(/* args */)
     // Build the SLACONE client
     apiClient = make_shared<SlasconeApiClient>(pemKey.c_str(), apiConfig);
 
+    apiClient->setResponseHandler([this](web::http::status_code statusCode, const web::http::http_headers& headers)
+    {
+        response_handler(statusCode, headers);
+    });
+
     // Create the data gathering API instance
     dataGatheringApi = make_unique<DataGatheringApi>(apiClient);
 
@@ -108,40 +113,21 @@ int Helper::activate_license()
     activateLicense->setClientName("SLASCONE C++ sample");
     activateLicense->setSoftwareVersion("24.11");
 
-    // Create a promise and future
-    auto promise = make_shared<std::promise<shared_ptr<LicenseInfoDto>>>();
-    future<shared_ptr<LicenseInfoDto>> future = promise->get_future();
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<shared_ptr<LicenseInfoDto>>(
+        [&]() { return provisioningApi->activateLicense(isvId, activateLicense); },
+        "activateLicense");
 
-    provisioningApi->activateLicense(isvId, activateLicense)
-        .then([promise](pplx::task<shared_ptr<LicenseInfoDto>> licenseInfo) mutable
-              {
-                try {
-                    auto licenseInfoDto = licenseInfo.get();
-                    promise->set_value(licenseInfoDto);
-                }
-                catch (...) {
-                    auto ex = current_exception();
-                    promise->set_exception(ex);
-                } });
-
-    try
+    if (result.errorType != ErrorType::None)
     {
-        // Get the result
-        licenseInfoDto = future.get();
-    }
-    catch (const ApiException &e)
-    {
-        // Handle API errors
-        handle_api_exception(e);
-    }
-    catch (const exception &e)
-    {
-        cout << "activateLicense() exception: " << e.what() << endl;
+        print_api_error(result.errorMessage, result.errorId);
+        return -1;
     }
 
+    licenseInfoDto = result.data;
     if (licenseInfoDto != nullptr)
     {
-        // Successfull activation
+        // Successful activation
         print_license(licenseInfoDto);
     }
     else
@@ -172,39 +158,21 @@ int Helper::send_license_heartbeat()
 	addHeartbeat->setSoftwareVersion("24.11");
 	addHeartbeat->setOperatingSystem(get_os_name());
 
-    // Create a promise and future
-    auto promise = make_shared<std::promise<shared_ptr<LicenseInfoDto>>>();
-    future<shared_ptr<LicenseInfoDto>> future = promise->get_future();
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<shared_ptr<LicenseInfoDto>>(
+        [&]() { return provisioningApi->addHeartbeat(isvId, addHeartbeat); },
+        "addHeartbeat");
 
-    provisioningApi->addHeartbeat(isvId, addHeartbeat)
-        .then([promise](pplx::task<shared_ptr<LicenseInfoDto>> licenseInfo) mutable
-              {
-				try {
-					auto licenseInfoDto = licenseInfo.get();
-					promise->set_value(licenseInfoDto);
-				}
-				catch (...) {
-                    auto ex = current_exception();
-					promise->set_exception(ex);
-				} });
-
-    try
+    if (result.errorType != ErrorType::None)
     {
-        licenseInfoDto = future.get();
-    }
-    catch (const ApiException &e)
-    {
-        // Handle API errors
-        handle_api_exception(e);
-    }
-    catch (const exception &e)
-    {
-        cout << "addHeartbeat() exception: " << e.what() << endl;
+        print_api_error(result.errorMessage, result.errorId);
+        return -1;
     }
 
+    licenseInfoDto = result.data;
     if (licenseInfoDto != nullptr)
 	{
-        // Successfull heartbeat
+        // Successful heartbeat
 		print_license(licenseInfoDto);
 	}
 	else
@@ -261,39 +229,21 @@ int Helper::unassign_token()
     shared_ptr<UnassignDto> unassignToken = make_shared<UnassignDto>();
     unassignToken->setTokenKey(licenseInfoDto->getTokenKey());
 
-    // Create a promise and future
-    auto promise = make_shared<std::promise<string>>();
-    future<string> future = promise->get_future();
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<string>(
+        [&]() { return provisioningApi->unassignLicense(isvId, unassignToken); },
+        "unassignLicense");
 
-    provisioningApi->unassignLicense(isvId, unassignToken)
-        .then([promise](pplx::task<string> response) mutable
-              {
-                try {
-                    promise->set_value(response.get());
-                }
-                catch (...) {
-                    auto ex = current_exception();
-                    promise->set_exception(ex);
-                } });
-
-    try
-    {        
-        cout << "unassignLicense() response: " << future.get() << endl;
-
-        // Reset memorized license info and temporary offline license
-        licenseInfoDto = nullptr;
-    }
-    catch (const ApiException &e)
+    if (result.errorType != ErrorType::None)
     {
-        // Handle API errors
-        handle_api_exception(e);
+        print_api_error(result.errorMessage, result.errorId);
         return -1;
     }
-    catch (const exception &e)
-    {
-        cout << "unassignLicense() exception: " << e.what() << endl;
-        return -1;
-    }
+
+    cout << "unassignLicense() response: " << result.data << endl;
+
+    // Reset memorized license info and temporary offline license
+    licenseInfoDto = nullptr;
 
     return 0;
 }
@@ -320,36 +270,18 @@ int Helper::send_analytical_heartbeat()
     addAnalyticalHeartbeat->setClientId(get_device_id());   
     addAnalyticalHeartbeat->setTokenKey(licenseInfoDto->getTokenKey());
 
-    // Create a promise and future
-    auto promise = make_shared<std::promise<string>>();
-    future<string> future = promise->get_future();
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<string>(
+        [&]() { return dataGatheringApi->addAnalyticalHeartbeat(isvId, addAnalyticalHeartbeat); },
+        "addAnalyticalHeartbeat");
 
-    dataGatheringApi->addAnalyticalHeartbeat(isvId, addAnalyticalHeartbeat)
-        .then([promise](pplx::task<string> response) mutable
-              {
-                try {
-                    promise->set_value(response.get());
-                }
-                catch (...) {
-                    auto ex = current_exception();
-                    promise->set_exception(ex);
-                } });
-
-    try
+    if (result.errorType != ErrorType::None)
     {
-        cout << "addAnalyticalHeartbeat() response: " << future.get() << endl;
-    }
-    catch (const ApiException &e)
-    {
-        // Handle API errors
-        handle_api_exception(e);
+        print_api_error(result.errorMessage, result.errorId);
         return -1;
     }
-    catch (const exception &e)
-    {
-        cout << "addAnalyticalHeartbeat() exception: " << e.what() << endl;
-        return -1;
-    }
+
+    cout << "addAnalyticalHeartbeat() response: " << result.data << endl;
 
     return 0;
 }
@@ -367,46 +299,27 @@ int Helper::send_usage_heartbeat()
     // Build the request body
     vector<shared_ptr<UsageHeartbeatValueDto>> usageHeartbeatValues;
     shared_ptr<UsageHeartbeatValueDto> usageHeartbeatValueDto = make_shared<UsageHeartbeatValueDto>();
-    usageHeartbeatValueDto->setUsageModuleId("114fa2f5-3c34-42f3-82e6-226ebe54544b");
-    usageHeartbeatValueDto->setUsageFeatureId("4b17640f-8aab-4205-be39-d9f9cabca2f1");
+    usageHeartbeatValueDto->setUsageFeatureId("66099049-0472-467c-6ea6-08da9ac57d7c");
     usageHeartbeatValueDto->setValue(3.0);
     usageHeartbeatValues.push_back(usageHeartbeatValueDto);
 
     shared_ptr<FullUsageHeartbeatDto> addUsageHeartbeat = make_shared<FullUsageHeartbeatDto>();
     addUsageHeartbeat->setClientId(get_device_id());
     addUsageHeartbeat->setTokenKey(licenseInfoDto->getTokenKey());
-    addUsageHeartbeat-> setUsageHeartbeat(usageHeartbeatValues);
+    addUsageHeartbeat->setUsageHeartbeat(usageHeartbeatValues);
 
-    // Create a promise and future
-    auto promise = make_shared<std::promise<string>>();
-    future<string> future = promise->get_future();
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<string>(
+        [&]() { return dataGatheringApi->addUsageHeartbeat(isvId, addUsageHeartbeat); },
+        "addUsageHeartbeat");
 
-    dataGatheringApi->addUsageHeartbeat(isvId, addUsageHeartbeat)
-        .then([promise](pplx::task<string> response) mutable
-              {
-                try {
-                    promise->set_value(response.get());
-                }
-                catch (...) {
-                    auto ex = current_exception();
-                    promise->set_exception(ex);
-                } });
-
-    try
+    if (result.errorType != ErrorType::None)
     {
-        cout << "addUsageHeartbeat() response: " << future.get() << endl;
-    }
-    catch (const ApiException &e)
-    {
-        // Handle API errors
-        handle_api_exception(e);
+        print_api_error(result.errorMessage, result.errorId);
         return -1;
     }
-    catch (const exception &e)
-    {
-        cout << "addUsageHeartbeat() exception: " << e.what() << endl;
-        return -1;
-    }
+
+    cout << "addUsageHeartbeat() response: " << result.data << endl;
 
     return 0;
 }
@@ -424,54 +337,37 @@ int Helper::send_consumption_heartbeat()
     addConsumptionHeartbeat->setClientId(get_device_id());
     addConsumptionHeartbeat->setConsumptionHeartbeat(consumptionHeartbeatValues);
 
-    // Create a promise and future
-    auto promise = make_shared<std::promise<vector<shared_ptr<ConsumptionDto>>>>();
-    future<vector<shared_ptr<ConsumptionDto>>> future = promise->get_future();
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<vector<shared_ptr<ConsumptionDto>>>(
+        [&]() { return dataGatheringApi->addConsumptionHeartbeat(isvId, addConsumptionHeartbeat); },
+        "addConsumptionHeartbeat");
 
-    dataGatheringApi->addConsumptionHeartbeat(isvId, addConsumptionHeartbeat)
-        .then([promise](pplx::task<vector<shared_ptr<ConsumptionDto>>> response) mutable
-              {
-                try {
-                    promise->set_value(response.get());
-                }
-                catch (...) {
-                    auto ex = current_exception();
-                    promise->set_exception(ex);
-                } });
-
-    try
+    if (result.errorType != ErrorType::None)
     {
-        vector<shared_ptr<ConsumptionDto>> consumptions = future.get();
-        for (auto consumption : consumptions)
+        print_api_error(result.errorMessage, result.errorId);
+        return -1;
+    }
+
+    for (auto consumption : result.data)
+    {
+        cout << "addConsumptionHeartbeat() limitation id: " <<  consumption->getLimitationId() << endl;
+
+        auto transactionId = consumption->getTransactionId();
+
+        // Check if the transaction ID is null or empty
+        if (transactionId.empty())
         {
-            cout << "addConsumptionHeartbeat() limitation id: " <<  consumption-> getLimitationId() << endl;
-
-            auto transactionId = consumption->getTransactionId();
-
-            // Check if the transaction ID is null or empty
-            if (transactionId.empty())
-            {
-                cout << "                          consumption limit reached!" << endl;
-            }
-            else
-            {
-                cout << "                          transaction id: " << transactionId << endl;
-                cout << "                          remaining: " << consumption->getRemaining() << endl;
-                cout << "                          next reset date: " << consumption->getNextResetDateUtc().to_string() << endl;
-            }
+            cout << "                          consumption limit reached!" << endl;
+        }
+        else
+        {
+            cout << "                          transaction id: " << transactionId << endl;
+            cout << "                          balance: " << consumption->getBalance() << endl;
+            cout << "                          remaining: " << consumption->getRemaining() << endl;
+            cout << "                          next reset date: " << (consumption->nextResetDateUtcIsSet() ? consumption->getNextResetDateUtc().to_string() : "N/A") << endl;
         }
     }
-    catch (const ApiException &e)
-    {
-        // Handle API errors
-        handle_api_exception(e);
-        return -1;
-    }
-    catch (const exception &e)
-    {
-        cout << "addConsumptionHeartbeat() exception: " << e.what() << endl;
-        return -1;
-    }
+
     return 0;
 }
 
@@ -504,39 +400,20 @@ int Helper::open_session()
     boost::uuids::uuid new_uuid = generator();
     sessionRequest->setSessionId(to_string(new_uuid));
 
-    // Create a promise and future
-    auto promise = make_shared<std::promise<shared_ptr<SessionStatusDto>>>();
-    future<shared_ptr<SessionStatusDto>> future = promise->get_future();
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<shared_ptr<SessionStatusDto>>(
+        [&]() { return provisioningApi->openSession(isvId, sessionRequest); },
+        "openSession");
 
-    provisioningApi->openSession(isvId, sessionRequest)
-        .then([promise](pplx::task<shared_ptr<SessionStatusDto>> response) mutable
-              {
-                try {
-                    promise->set_value(response.get());
-                }
-                catch (...) {
-                    auto ex = current_exception();
-                    promise->set_exception(ex);
-                } });
-
-    try
+    if (result.errorType != ErrorType::None)
     {
-        auto sessionStatusDto = future.get();
-        cout << "Session valid unitl: " << sessionStatusDto->getSessionValidUntil().to_string() << endl;
-        // Store in stack
-        sessionIds.push(sessionRequest->getSessionId());
-    }
-    catch (const ApiException &e)
-    {
-        // Handle API errors
-        handle_api_exception(e);
+        print_api_error(result.errorMessage, result.errorId);
         return -1;
     }
-    catch (const exception &e)
-    {
-        cout << "openSession() exception: " << e.what() << endl;
-        return -1;
-    }
+
+    cout << "Session valid unitl: " << result.data->getSessionValidUntil().to_string() << endl;
+    // Store in stack
+    sessionIds.push(sessionRequest->getSessionId());
 
     return 0;
 }
@@ -610,38 +487,20 @@ int Helper::close_session()
     sessionRequest->setClientId(get_device_id());
     sessionRequest->setSessionId(sessionIds.top());
 
-    // Create a promise and future
-    auto promise = make_shared<std::promise<string>>();
-    future<string> future = promise->get_future();
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<string>(
+        [&]() { return provisioningApi->closeSession(isvId, sessionRequest); },
+        "closeSession");
 
-    provisioningApi->closeSession(isvId, sessionRequest)
-        .then([promise](pplx::task<string> response)
-              {
-                try {
-                    promise->set_value(response.get());
-                }
-                catch (...) {
-                    auto ex = current_exception();
-                    promise->set_exception(ex);
-                } });
-
-    try
+    if (result.errorType != ErrorType::None)
     {
-        cout << "closeSession() response: " << future.get() << endl;
-        // Remove from stack
-        sessionIds.pop();
-    }
-    catch (const ApiException &e)
-    {
-        // Handle API errors
-        handle_api_exception(e);
+        print_api_error(result.errorMessage, result.errorId);
         return -1;
     }
-    catch (const exception &e)
-    {
-        cout << "closeSession() exception: " << e.what() << endl;
-        return -1;
-    }
+
+    cout << "closeSession() response: " << result.data << endl;
+    // Remove from stack
+    sessionIds.pop();
 
     return 0;
 }
@@ -659,21 +518,21 @@ int Helper::get_license_by_id()
     getLicenses->setLicenseKey("27180460-29df-4a5a-a0a1-78c85ab6cee0");
     getLicenses->setProductId(productId);
 
-    provisioningApi->getLicensesByLicenseKeyAsync(isvId, getLicenses)
-        .then([this](pplx::task<vector<shared_ptr<LicenseDto>>> licenses)
-              {
-					try {
-						auto licenseDtos = licenses.get();
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<vector<shared_ptr<LicenseDto>>>(
+        [&]() { return provisioningApi->getLicensesByLicenseKeyAsync(isvId, getLicenses); },
+        "getLicensesByLicenseKeyAsync");
 
-						for (auto licenseDto : licenseDtos)
-						{
-							Helper::print_license(licenseDto);
-						}
-					}
-					catch (const exception& e) {
-						cout << "getLicensesByLicenseKeyAsync() exception: " << e.what() << endl;
-					} })
-        .wait();
+    if (result.errorType != ErrorType::None)
+    {
+        print_api_error(result.errorMessage, result.errorId);
+        return -1;
+    }
+
+    for (auto licenseDto : result.data)
+    {
+        print_license(licenseDto);
+    }
 
     return 0;
 }
@@ -748,24 +607,43 @@ string Helper::get_device_id()
     return hostname;
 }
 
-int Helper::handle_api_exception(const ApiException &e)
+void Helper::response_handler(web::http::status_code statusCode, const web::http::http_headers& headers)
 {
-    // Handle API errors
-    shared_ptr<istream> content = e.getContent();
-    ErrorResultObjects errorResultObjects;
-    string jsonStr((istreambuf_iterator<char>(*content)), istreambuf_iterator<char>());
-    errorResultObjects.fromJson(web::json::value::parse(jsonStr));
+    // Catch transient error responses and throw an ApiException that contains the response headers
+    if (statusCode == 429
+        || statusCode == web::http::status_codes::ServiceUnavailable
+        || statusCode == web::http::status_codes::GatewayTimeout)
+    {
+        string errorMessage = "API error: HTTP status code " + to_string(statusCode);
 
-    auto errorId = errorResultObjects.getId();
-    cout << "API error ID: " << errorId << endl;
-    cout << "API error message: " << errorResultObjects.getMessage() << endl;
+        // Build a std::map<utility::string_t, utility::string_t> from the web::http::http_headers
+        map<utility::string_t, utility::string_t> headersMap;
+        for (const auto& header : headers)
+        {
+            headersMap[header.first] = header.second;
+        }
+
+        // Build a JSON content stream so that error parsing can handle it
+        auto content = make_shared<stringstream>();
+        *content << "{\"id\":0,\"message\":\"" << errorMessage << "\"}";
+
+        throw ApiException(statusCode, errorMessage, headersMap, content); 
+    }
+}
+
+void Helper::print_api_error(const string& errorMessage, int32_t errorId)
+{
+    cout << "API error: " << errorMessage << endl;
+
+    if (errorId != 0)
+    {
+        cout << "API error ID: " << errorId << endl;
+    }
 
     if (2006 == errorId)
     {
         cout << "You have to activate a license first before you can send a license heartbeat." << endl;
     }
-
-    return 0;
 }
 
 int Helper::print_license(shared_ptr<LicenseDto> licenseDto)
@@ -827,9 +705,9 @@ int Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
     if (licenseInfoDto != nullptr)
     {
         cout << "License key: " << to_utf8string(licenseInfoDto->getLicenseKey()) << endl;
-        cout << "Legacy license key: " << to_utf8string(licenseInfoDto->getLegacyLicenseKey()) << endl;
+        licenseInfoDto->legacyLicenseKeyIsSet() ? cout << "Legacy license key: " << to_utf8string(licenseInfoDto->getLegacyLicenseKey()) << endl : cout << "Legacy license key: not set" << endl;
         cout << "Token key: " << to_utf8string(licenseInfoDto->getTokenKey()) << endl;
-        cout << "License name: " << to_utf8string(licenseInfoDto->getLicenseName()) << endl;
+        licenseInfoDto->licenseNameIsSet() ? cout << "License name: " << to_utf8string(licenseInfoDto->getLicenseName()) << endl : cout << "License name: not set" << endl;
         cout << "Product name: " << to_utf8string(licenseInfoDto->getProductName()) << endl;
         cout << "Template name: " << to_utf8string(licenseInfoDto->getTemplateName()) << endl;
         cout << "License valid: " << licenseInfoDto->isIsLicenseValid() << endl;
