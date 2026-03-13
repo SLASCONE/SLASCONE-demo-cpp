@@ -7,6 +7,7 @@
 #include <SlasconeOpenApiClient/SlasconeApiClient.h>
 #include <SlasconeOpenApiClient/api/DataGatheringApi.h>
 #include <SlasconeOpenApiClient/api/ProvisioningApi.h>
+#include "ErrorHandlingHelper.h"
 
 using namespace std;
 using namespace org::openapitools::client::api;
@@ -52,7 +53,8 @@ namespace SLASCONE_demo_cpp
         string get_device_id();
 
     protected:
-        int handle_api_exception(const ApiException &e);
+        void response_handler(web::http::status_code, const web::http::http_headers&);
+        void print_api_error(const std::string& errorMessage, int32_t errorId);
         int print_license(shared_ptr<LicenseDto> licenseDto);
         int print_license(shared_ptr<LicenseInfoDto> licenseInfoDto);
     };

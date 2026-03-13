@@ -177,7 +177,7 @@ void LicenseXmlHelper::print_features(xmlNodeSetPtr nodes)
         shared_ptr<ProvisioningFeatureDto> feature = make_shared<ProvisioningFeatureDto>();
         fromXml(feature, nodes->nodeTab[i]);
         cout << " - Feature name: " << to_utf8string(feature->getName()) << endl;
-        cout << "   Feature description: " << to_utf8string(feature->getDescription()) << endl;
+        cout << "   Feature description: " << (feature->descriptionIsSet() ? to_utf8string(feature->getDescription()) : "N/A") << endl;
     }
 }
 
