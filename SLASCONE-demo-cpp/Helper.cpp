@@ -6,10 +6,12 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "LicenseXmlValidator/LicenseXmlValidator.h"
+#include <SlasconeOpenApiClient/model/ConsumptionResetPeriod.h>
 
 using namespace std;
 using namespace web::http::client;
 using namespace org::openapitools::client::api;
+using namespace org::openapitools::client::model;
 using namespace utility::conversions;
 using namespace SLASCONE_demo_cpp;
 
@@ -326,15 +328,40 @@ int Helper::send_usage_heartbeat()
 
 int Helper::send_consumption_heartbeat()
 {
+    // Check licenseInfoDto
+    if (licenseInfoDto == nullptr)
+    {
+        cout << "Error: No license info available." << endl;
+        cout << "       Please activate the license first or send a license heartbeat." << endl;
+        return -1;
+    }
+
     // Build the request body
     vector<shared_ptr<ConsumptionHeartbeatValueDto>> consumptionHeartbeatValues;
-    shared_ptr<ConsumptionHeartbeatValueDto> consumptionHeartbeatValueDto = make_shared<ConsumptionHeartbeatValueDto>();
-    consumptionHeartbeatValueDto->setLimitationId("a3814c76-7418-4ea9-a772-08db30da1bdc");
-    consumptionHeartbeatValueDto->setValue(1.0);
-    consumptionHeartbeatValues.push_back(consumptionHeartbeatValueDto);
+    
+    // Ask a consumption value for each limitation of the license
+    for (auto& licenseLimitation : licenseInfoDto->getLimitations())
+    {
+        const ConsumptionResetPeriod::eConsumptionResetPeriod resetMode = 
+            licenseLimitation->getConsumptionResetMode()->getValue();
+
+        // Consumption for limitations with reset mode "_0" (Disabled) are not allowed.
+        if (ConsumptionResetPeriod::eConsumptionResetPeriod::_0 == resetMode)        
+            continue; 
+
+        cout << "Value for limitation '" << licenseLimitation->getName() << "': ";
+        double value;
+        cin >> value;
+
+        shared_ptr<ConsumptionHeartbeatValueDto> consumptionHeartbeatValueDto = make_shared<ConsumptionHeartbeatValueDto>();
+        consumptionHeartbeatValueDto->setLimitationId(licenseLimitation->getId());
+        consumptionHeartbeatValueDto->setValue(value);
+        consumptionHeartbeatValues.push_back(consumptionHeartbeatValueDto);
+    }
 
     shared_ptr<FullConsumptionHeartbeatDto> addConsumptionHeartbeat = make_shared<FullConsumptionHeartbeatDto>();
     addConsumptionHeartbeat->setClientId(get_device_id());
+    addConsumptionHeartbeat->setTokenKey(licenseInfoDto->getTokenKey());
     addConsumptionHeartbeat->setConsumptionHeartbeat(consumptionHeartbeatValues);
 
     // Call the API with retry logic
