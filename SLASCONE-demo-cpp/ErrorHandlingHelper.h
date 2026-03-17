@@ -29,7 +29,10 @@ namespace SLASCONE_demo_cpp
         /// Business logic or validation error (e.g., invalid input, conflict)
         Functional,
 
-        /// Technical error (e.g., internal server error) or network/connectivity issue
+        /// Technical error (e.g., invalid request)
+        Technical,
+
+        /// Network error (e.g., no internet connection, timeout)
         Network
     };
 
@@ -98,9 +101,13 @@ namespace SLASCONE_demo_cpp
         /// Check if the HTTP status code indicates a transient error
         static bool isTransientError(int statusCode)
         {
-            return statusCode == 429   // Too Many Requests
-                || statusCode == 503   // Service Unavailable
-                || statusCode == 504;  // Gateway Timeout
+            return statusCode == 408 || // Request Timeout
+                   statusCode == 429 || // Too Many Requests
+                   statusCode == 500 || // Internal Server Error
+                   statusCode == 502 || // Bad Gateway
+                   statusCode == 503 || // Service Unavailable
+                   statusCode == 504 || // Gateway Timeout
+                   statusCode == 507;   // Insufficient Storage
         }
 
     public:
@@ -159,7 +166,7 @@ namespace SLASCONE_demo_cpp
                     }
                     else if (statusCode == 401 || statusCode == 403)
                     {
-                        result.errorType = ErrorType::Network;
+                        result.errorType = ErrorType::Technical;
                         result.errorMessage = callerName + " received an error: Not authorized";
                         result.errorId = 0;
                         return result;
@@ -197,9 +204,29 @@ namespace SLASCONE_demo_cpp
                         return result;
                     }
                 }
-                catch (const std::exception& e)
+                catch (const web::http::http_exception& e)
                 {
+                    // Network error are considered transient: wait and retry
+                    --retryCountdown;
+                    if (0 <= retryCountdown)
+                    {
+                        std::cout << callerName << ": Network error (" << std::string(e.what())
+                                    << "), retrying after " << RetryWaitTime << " seconds..."
+                                    << std::endl;
+                        std::this_thread::sleep_for(std::chrono::seconds(RetryWaitTime));
+                        continue;
+                    }
+
+                    // Retries exhausted
                     result.errorType = ErrorType::Network;
+                    result.errorMessage = callerName + " threw an HTTP exception: "
+                        + std::string(e.what()) + " (Error code: " + std::to_string(e.error_code().value()) + ")";
+                    result.errorId = 0;
+                    return result;
+                }
+                catch (const std::exception& e)
+                {                    
+                    result.errorType = ErrorType::Technical;
                     result.errorMessage = callerName + " threw an exception: "
                         + std::string(e.what());
                     result.errorId = 0;
