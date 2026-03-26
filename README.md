@@ -13,6 +13,7 @@ https://support.slascone.com/.
   - [BUILDING AND RUNNING WITH CMAKE PRESETS](#building-and-running-with-cmake-presets)
   - [CONNECTING TO YOUR SLASCONE ENVIRONMENT](#connecting-to-your-slascone-environment)
   - [COVERAGE](#coverage)
+  - [ERROR HANDLING AND RETRY LOGIC](#error-handling-and-retry-logic)
   - [RUNNING THE DEMO APP WITH WINDOWS](#running-the-demo-app-with-windows)
   - [API CLIENT](#api-client)
 
@@ -66,16 +67,89 @@ In the demo app you can open and close sessions in a _floating_ licensing model.
 
 The demo app contains exemplary implementations of how to verify the SLASCONE WebAPI response with the signature header or verify the integrity of an offline license file in XML format. On every request the client also generates a cryptographically strong random nonce, base64 encodes it, adds it to the `x-nonce` header, and later verifies the `x-nonce-signature` header so the server response cannot be replayed with stale data. You can inspect the full nonce and header handling inside [SLASCONE-demo-client/src/SlasconeApiClient.cpp](SLASCONE-demo-client/src/SlasconeApiClient.cpp#L54-L142), especially the `callApi()` override where the nonce, response signature, and persistence logic live. You can find more details about [digital signature and data integrity](https://support.slascone.com/hc/en-us/articles/360016063637-DIGITAL-SIGNATURE-AND-DATA-INTEGRITY) in the SLASCONE help center.
 
-### Error handling and retry logic
+## ERROR HANDLING AND RETRY LOGIC
 
-The demo app includes a centralized error handling helper ([SLASCONE-demo-cpp/ErrorHandlingHelper.h](SLASCONE-demo-cpp/ErrorHandlingHelper.h)) that wraps every SLASCONE API call with standardized error classification and retry logic. The helper distinguishes three error categories:
- - **Functional** errors represent business logic responses such as HTTP 409 (Conflict). These carry a SLASCONE-specific error id and message that the caller should evaluate to drive application behavior.
- - **Technical** errors cover authentication failures (HTTP 401/403) and unexpected exceptions that indicate a configuration or programming issue.
- - **Network** errors include transient HTTP status codes (408, 429, 500, 502, 503, 504, 507) as well as low-level connectivity problems (e.g., DNS resolution failures or timeouts).
+This sample application demonstrates how to handle SLASCONE API errors and implement retry logic using the `ErrorHandlingHelper` class ([SLASCONE-demo-cpp/ErrorHandlingHelper.h](SLASCONE-demo-cpp/ErrorHandlingHelper.h)). All API calls are routed through this helper, which provides consistent error classification, automatic retries for transient failures, and a unified response wrapper. For detailed information about SLASCONE API error codes, refer to the [SLASCONE error handling documentation](https://support.slascone.com/hc/en-us/articles/360016160398-ERROR-HANDLING).
 
-For transient errors the helper automatically retries the request up to one time. If the server includes a `Retry-After` header the helper respects it (clamped between 5 and 120 seconds); otherwise it falls back to a default wait of 15 seconds. Network-level exceptions (e.g., no internet connection) are treated the same way and retried once before being reported.
+### Error Categories
 
-If retries are exhausted, the structured result is returned to the caller with the error category and details so that the application can implement a graceful fallback — for example falling back to locally cached license data as described in ['What and how to save in your client'](https://support.slascone.com/hc/en-us/articles/7702036319261-WHAT-AND-HOW-TO-SAVE-IN-YOUR-CLIENT). For more information about the recommended error handling strategy see the [error handling](https://support.slascone.com/hc/en-us/articles/360016160398-ERROR-HANDLING) article in the SLASCONE help center.
+The `ErrorHandlingHelper` classifies API errors into three categories:
+
+1. **Functional Errors (HTTP 409)**
+   - Represent business logic conflicts returned by the SLASCONE API
+   - Examples include attempting to activate an already-activated license, unknown client IDs, or exceeded license limits
+   - The response body is automatically parsed into an `ErrorResultObjects` with a specific error code and message
+   - These errors are never retried, as they require the caller to address the underlying business logic issue
+
+2. **Technical Errors (HTTP 4xx/5xx)**
+   - Represent server-side or request issues such as internal server errors, bad gateways, or service unavailability
+   - Transient HTTP errors (408, 429, 500, 502, 503, 504, 507) are automatically retried
+   - Non-transient errors (e.g., 401, 403, 404) are returned immediately without retry
+
+3. **Network Errors**
+   - Represent connectivity issues such as socket timeouts, connection refused, DNS resolution failures, or SSL errors
+   - All network-level exceptions (caught as `web::http::http_exception`) are treated as transient and are automatically retried
+   - If retries are exhausted, the error is reported with the underlying exception message and error code
+
+### Retry Logic
+
+The `ErrorHandlingHelper` implements automatic retry logic for transient errors:
+
+1. **Retry Count**: By default, the helper performs a maximum of 1 automatic retry (`MaxRetryCount`). This follows the SLASCONE recommendation of a moderate retry policy to avoid putting unnecessary strain on the server.
+
+2. **Wait Time**: The default wait time between retries is 15 seconds (`RetryWaitTime`).
+
+3. **Retry-After Header**: For HTTP errors that include a `Retry-After` response header (commonly sent with 429 or 503 responses), the helper uses the server-specified wait time instead of the default. The value is clamped between 5 and 120 seconds to avoid excessively short or long waits.
+
+4. **Non-Transient Errors**: Errors that are not classified as transient (e.g., HTTP 404 or a functional 409 conflict) are returned immediately without any retry attempt.
+
+### Handling API Responses
+
+All API calls wrapped by `ErrorHandlingHelper::execute()` return an `ApiResult<T>` struct, which encapsulates either a successful result or error details:
+
+1. **Success Check**: Check the `errorType` field — a value of `ErrorType::None` indicates success.
+
+2. **Success Path**: Use the `data` field to access the API response data (e.g., `LicenseInfoDto`, `SessionStatusDto`).
+
+3. **Error Inspection**: When an error occurs, use the following fields:
+   - `errorType` — Returns the error category (`Functional`, `Technical`, or `Network`)
+   - `errorMessage` — Returns a formatted error description including the caller name and error details
+   - `errorId` — For functional errors (HTTP 409), returns the specific SLASCONE error code from the parsed `ErrorResultObjects`
+
+4. **Usage Example**: The following pattern demonstrates standard error handling for API calls:
+
+```cpp
+auto result = ErrorHandlingHelper::execute<std::shared_ptr<LicenseInfoDto>>(
+    [&]() { return provisioningApi->activateLicenseAsync(activateInfo); },
+    "activateLicense");
+
+if (result.errorType != ErrorType::None)
+{
+    std::cout << "Error Type: " << static_cast<int>(result.errorType) << std::endl;
+    std::cout << "Message: " << result.errorMessage << std::endl;
+
+    if (result.errorType == ErrorType::Functional)
+    {
+        // Handle specific business logic error codes
+        int errorId = result.errorId;
+    }
+    return;
+}
+
+auto licenseInfo = result.data;
+```
+
+### Recommended Error Handling Strategy
+
+Based on the SLASCONE error handling guidelines, consider the following strategies when integrating SLASCONE licensing into your application:
+
+1. **Always Handle HTTP 409 Explicitly**: These are business logic responses, not unexpected errors. Check the specific error code from `errorId` and handle each case according to your application's needs. Refer to the endpoint-specific documentation in the [SLASCONE API](https://api.slascone.com/swagger/index.html?urls.primaryName=V2) for possible conflict scenarios.
+
+2. **Fallback for Transient Failures**: The built-in retry logic handles the first retry automatically. If retries are exhausted, implement a fallback strategy such as using cached license data from the last successful heartbeat (see ['What and how to save in your client'](https://support.slascone.com/hc/en-us/articles/7702036319261-WHAT-AND-HOW-TO-SAVE-IN-YOUR-CLIENT)).
+
+3. **Heartbeat Failure Resilience**: When a license heartbeat fails after retries, fall back to the locally cached license data. The freeride period provides a grace period during which the application can continue operating. Do not apply freeride logic for server errors — reserve it for true offline scenarios.
+
+4. **Session Open Resilience**: For floating license session open failures caused by transient errors, consider treating the request as successful to avoid disrupting the user experience. This approach prioritizes usability while maintaining license compliance once connectivity is restored.
 
 ## RUNNING THE DEMO APP WITH WINDOWS
 
