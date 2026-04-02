@@ -103,7 +103,6 @@ namespace SLASCONE_demo_cpp
         {
             return statusCode == 408 || // Request Timeout
                    statusCode == 429 || // Too Many Requests
-                   statusCode == 500 || // Internal Server Error
                    statusCode == 502 || // Bad Gateway
                    statusCode == 503 || // Service Unavailable
                    statusCode == 504 || // Gateway Timeout
