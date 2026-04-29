@@ -947,6 +947,12 @@ int Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
             limitation->valueIsSet() 
                 ? cout << "   Limitation value: " << limitation->getValue() << endl
                 : cout << "   Unlimited limitation" << endl;
+            limitation->remainingIsSet() 
+                ? cout << "   Limitation remaining: " << limitation->getRemaining() << endl
+                : cout << "   Limitation remaining: not set" << endl;
+            limitation->balanceIsSet() 
+                ? cout << "   Limitation balance: " << limitation->getBalance() << endl
+                : cout << "   Limitation balance: not set" << endl;
         }
 
         auto constrainedVariables = licenseInfoDto->getConstrainedVariables();
