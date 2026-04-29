@@ -178,7 +178,7 @@ void LicenseXmlHelper::print_features(xmlNodeSetPtr nodes)
         fromXml(feature, nodes->nodeTab[i]);
         cout << " - Feature name: " << to_utf8string(feature->getName());
         feature->isIsActive() ? cout << endl : cout << " (not active)" << endl;
-        cout << "   Feature description: " << (feature->descriptionIsSet() ? to_utf8string(feature->getDescription()) : "N/A") << endl;
+        cout << "   Feature description: " << (feature->descriptionIsSet() ? to_utf8string(feature->getDescription()) : "not set") << endl;
     }
 }
 

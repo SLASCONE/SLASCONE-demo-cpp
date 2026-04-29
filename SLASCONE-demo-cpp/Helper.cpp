@@ -956,6 +956,7 @@ int Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
             constrainedVariable->descriptionIsSet() 
                 ? cout << "   Constrained variable description: " << to_utf8string(constrainedVariable->getDescription()) << endl 
                 : cout << "   Constrained variable description: not set" << endl;
+            cout << "   Constrained variable value: ";            
             for (auto value : constrainedVariable->getValue())
             {
                 cout << to_utf8string(value);
