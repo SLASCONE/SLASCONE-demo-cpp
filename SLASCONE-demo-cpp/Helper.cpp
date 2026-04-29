@@ -930,24 +930,32 @@ int Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
         auto features = licenseInfoDto->getFeatures();
         for (auto feature : features)
         {
-            cout << " - Feature name: " << to_utf8string(feature->getName()) << endl;
-            cout << "   Feature description: " << to_utf8string(feature->getDescription()) << endl;
+            cout << " - Feature name: " << to_utf8string(feature->getName());
+            feature->isIsActive() ? cout << endl : cout << " (not active)" << endl;
+            feature->descriptionIsSet() 
+                ? cout << "   Feature description: " << to_utf8string(feature->getDescription()) << endl
+                : cout << "   Feature description: not set" << endl;
         }
 
         auto limitations = licenseInfoDto->getLimitations();
         for (auto limitation : limitations)
         {
             cout << " - Limitation name: " << to_utf8string(limitation->getName()) << endl;
-            cout << "   Limitation description: " << to_utf8string(limitation->getDescription()) << endl;
-            cout << "   Limitation value: " << limitation->getValue() << endl;
+            limitation->descriptionIsSet() 
+                ? cout << "   Limitation description: " << to_utf8string(limitation->getDescription()) << endl 
+                : cout << "   Limitation description: not set" << endl;
+            limitation->valueIsSet() 
+                ? cout << "   Limitation value: " << limitation->getValue() << endl
+                : cout << "   Unlimited limitation" << endl;
         }
 
         auto constrainedVariables = licenseInfoDto->getConstrainedVariables();
         for (auto constrainedVariable : constrainedVariables)
         {
             cout << " - Constrained variable name: " << to_utf8string(constrainedVariable->getName()) << endl;
-            cout << "   Constrained variable description: " << to_utf8string(constrainedVariable->getDescription()) << endl;
-            cout << "   Constrained variable value: ";            
+            constrainedVariable->descriptionIsSet() 
+                ? cout << "   Constrained variable description: " << to_utf8string(constrainedVariable->getDescription()) << endl 
+                : cout << "   Constrained variable description: not set" << endl;
             for (auto value : constrainedVariable->getValue())
             {
                 cout << to_utf8string(value);
@@ -959,7 +967,9 @@ int Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
         for (auto variable : variables)
         {
             cout << " - Variable name: " << to_utf8string(variable->getName()) << endl;
-            cout << "   Variable description: " << to_utf8string(variable->getDescription()) << endl;
+            variable->descriptionIsSet() 
+                 ? cout << "   Variable description: " << to_utf8string(variable->getDescription()) << endl
+                 : cout << "   Variable description: not set" << endl;
             cout << "   Variable value: " << to_utf8string(variable->getValue()) << endl;
         }
 

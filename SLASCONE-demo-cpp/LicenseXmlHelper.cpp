@@ -176,7 +176,8 @@ void LicenseXmlHelper::print_features(xmlNodeSetPtr nodes)
 
         shared_ptr<ProvisioningFeatureDto> feature = make_shared<ProvisioningFeatureDto>();
         fromXml(feature, nodes->nodeTab[i]);
-        cout << " - Feature name: " << to_utf8string(feature->getName()) << endl;
+        cout << " - Feature name: " << to_utf8string(feature->getName());
+        feature->isIsActive() ? cout << endl : cout << " (not active)" << endl;
         cout << "   Feature description: " << (feature->descriptionIsSet() ? to_utf8string(feature->getDescription()) : "N/A") << endl;
     }
 }
@@ -196,8 +197,10 @@ void LicenseXmlHelper::print_limitations(xmlNodeSetPtr nodes)
         shared_ptr<ProvisioningLimitationDto> limitation = make_shared<ProvisioningLimitationDto>();
         fromXml(limitation, nodes->nodeTab[i]);
         cout << " - Limitation name: " << to_utf8string(limitation->getName()) << endl;
-        cout << "   Limitation description: " << to_utf8string(limitation->getDescription()) << endl;
-        cout << "   Limitation value: " << limitation->getValue() << endl;
+        cout << "   Limitation description: " << (limitation->descriptionIsSet() ? to_utf8string(limitation->getDescription()) : "not set") << endl;
+        limitation->valueIsSet() 
+            ? cout << "   Limitation value: " << limitation->getValue() << endl
+            : cout << "   Unlimited limitation" << endl;
     }
 }
 
@@ -216,7 +219,9 @@ void LicenseXmlHelper::print_constrained_variables(xmlNodeSetPtr nodes)
         shared_ptr<ProvisioningConstrainedVariableDto> variable = make_shared<ProvisioningConstrainedVariableDto>();
         fromXml(variable, nodes->nodeTab[i]);
         cout << " - Constrained variable name: " << to_utf8string(variable->getName()) << endl;
-        cout << "   Constrained variable description: " << to_utf8string(variable->getDescription()) << endl;
+        variable->descriptionIsSet() 
+            ? cout << "   Constrained variable description: " << to_utf8string(variable->getDescription()) << endl
+            : cout << "   Constrained variable description: not set" << endl;
         cout << "   Constrained variable values: ";
         for (auto value : variable->getValue())
         {
@@ -241,7 +246,9 @@ void LicenseXmlHelper::print_variable(xmlNodeSetPtr nodes)
         shared_ptr<ProvisioningVariableDto> variable = make_shared<ProvisioningVariableDto>();
         fromXml(variable, nodes->nodeTab[i]);
         cout << " - Variable name: " << to_utf8string(variable->getName()) << endl;
-        cout << "   Variable description: " << to_utf8string(variable->getDescription()) << endl;
+        variable->descriptionIsSet() 
+             ? cout << "   Variable description: " << to_utf8string(variable->getDescription()) << endl
+             : cout << "   Variable description: not set" << endl;
         cout << "   Variable value: " << to_utf8string(variable->getValue()) << endl;
     }
 }
@@ -294,7 +301,11 @@ int LicenseXmlHelper::fromXml(shared_ptr<ProvisioningLimitationDto> &limitation,
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "value") == 0)
             {
-                limitation->setValue(strtol(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)), nullptr, 10));
+                auto valueStr = reinterpret_cast<const char *>(xmlNodeGetContent(curNode));
+                if (valueStr != nullptr && strlen(valueStr) > 0)
+                {
+                    limitation->setValue(strtol(valueStr, nullptr, 10));
+                }
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "consumption_reset_mode") == 0)
             {
