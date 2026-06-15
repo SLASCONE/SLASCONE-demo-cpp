@@ -55,7 +55,5 @@ namespace SLASCONE_demo_cpp
     protected:
         void response_handler(web::http::status_code, const web::http::http_headers&);
         void print_api_error(const std::string& errorMessage, int32_t errorId);
-        int print_license(shared_ptr<LicenseDto> licenseDto);
-        int print_license(shared_ptr<LicenseInfoDto> licenseInfoDto);
     };
 }
