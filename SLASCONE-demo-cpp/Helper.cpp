@@ -36,7 +36,7 @@ const string provisioningKeyHeader = "ProvisioningKey";
 // Provisioning key
 const string provisioningKey = "NfEpJ2DFfgczdYqOjvmlgP2O/4VlqmRHXNE9xDXbqZcOwXTbH3TFeBAKKbEzga7D7ashHxFtZOR142LYgKWdNocibDgN75/P58YNvUZafLdaie7eGwI/2gX/XuDPtqDW";
 
-const string licenseKey = "27180460-29df-4a5a-a0a1-78c85ab6cee0"; // Just for demo, do not change this
+const string licenseKey = "5a61ceaa-d720-488f-83a2-da6e1efa51f6"; // "27180460-29df-4a5a-a0a1-78c85ab6cee0"; // Just for demo, do not change this
 
 // CHANGE these values according to your environment at: https://my.slascone.com/administration/signature
 const string pemKey =
@@ -315,6 +315,41 @@ int Helper::unassign_token()
 
     // Reset memorized license info and temporary offline license
     licenseInfoDto = nullptr;
+
+    return 0;
+}
+
+int Helper::lookup_license_info()
+{
+    // Build the request body
+    shared_ptr<GetLicensesByLicenseKeyDto> getLicensesByCustomerDto = make_shared<GetLicensesByLicenseKeyDto>();
+    getLicensesByCustomerDto->setLicenseKey(licenseKey);
+    getLicensesByCustomerDto->setProductId(productId);
+
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<std::vector<std::shared_ptr<LicenseDto>>>(
+        [&]() { return provisioningApi->getLicensesByLicenseKeyAsync(isvId, getLicensesByCustomerDto); },
+        "getLicensesByLicenseKey");
+
+    if (result.errorType != ErrorType::None)
+    {
+        print_api_error(result.errorMessage, result.errorId);
+        return -1;
+    }
+
+    auto licenses = result.data;
+    if (licenses.empty())
+    {
+        cout << "No licenses found for the given license key." << endl;
+    }
+    else
+    {
+        cout << licenses.size() << " Licenses found for the given license key:" << endl;
+        for (const auto& license : licenses)
+        {
+            LicensePrettyPrinter::print_license(license);
+        }
+    }
 
     return 0;
 }

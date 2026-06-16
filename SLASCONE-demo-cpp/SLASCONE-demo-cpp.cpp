@@ -38,6 +38,8 @@ int main(int argc, const char *argv[])
         cout << "-- OFFLINE LICENSE" << endl;
         cout << "    11: Validate license file (signature check)" << endl;
         cout << "    12: Read license file" << endl;
+        cout << "-- MISC" << endl;
+        cout << "    13: Lookup license information" << endl;
         cout << "x: Exit" << endl << "> ";
         cin >> input;
 
@@ -123,6 +125,12 @@ int main(int argc, const char *argv[])
             // Read license file
             cout << "Reading license file..." << endl;
 			LicenseXmlHelper::print_license_infos("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e.xml");
+        }
+        else if (input == "13")
+        {
+            // Lookup license information
+            cout << "Looking up license information..." << endl;
+            helper.lookup_license_info();            
         }
     }
     return 0;

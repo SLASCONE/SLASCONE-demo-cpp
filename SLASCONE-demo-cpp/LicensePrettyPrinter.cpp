@@ -1,11 +1,25 @@
 #include <iostream>
 #include <string>
+#include <ctime>
+#include <cstdint>
+#include <cpprest/asyncrt_utils.h>
 #include "LicensePrettyPrinter.h"
 
 using namespace std;
 using namespace org::openapitools::client::model;
+using namespace utility;
 using namespace utility::conversions;
 using namespace SLASCONE_demo_cpp;
+
+std::tm datetime_to_tm(const utility::datetime& dt)
+{
+    int64_t ticks = dt.to_interval();  // 100-ns ticks since 1601
+    int64_t total_seconds = ticks / 10'000'000;  // convert to seconds
+    std::time_t tt = static_cast<std::time_t>(total_seconds - 11644473600LL);
+    std::tm tm{};    
+    gmtime_r(&tt, &tm); // or gmtime_s on Windows
+    return tm;
+}
 
 int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
 {
@@ -14,70 +28,173 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
         return -1;
     }
 
-    cout << "License infos (Retrieved " << to_utf8string(licenseDto->getCreatedDateUtc().to_string()) << "):" << endl;
-
     // Display the main properties of the license
     cout << "\nLicense Information:" << endl;
     cout << "-------------------" << endl;
-    cout << "License Name: " << to_utf8string(licenseDto->getName()) << endl;
-    cout << "License Key: " << to_utf8string(licenseDto->getId()) << endl;
+    cout << "License Name: " << (licenseDto->nameIsSet() ? to_utf8string(licenseDto->getName()) : "") << endl;
+    cout << "License Key: " << (licenseDto->idIsSet() ? to_utf8string(licenseDto->getId()) : "") << endl;
 
-    if (!licenseDto->getLegacyLicenseKey().empty())
+    if (licenseDto->legacyLicenseKeyIsSet() && !licenseDto->getLegacyLicenseKey().empty())
     {
         cout << "Legacy License Key: " << to_utf8string(licenseDto->getLegacyLicenseKey()) << endl;
     }
 
-    cout << "License key: " << to_utf8string(licenseDto->getId()) << endl;
-    cout << "Legacy license key: " << to_utf8string(licenseDto->getLegacyLicenseKey()) << endl;
-    cout << "License name: " << to_utf8string(licenseDto->getName()) << endl;
-    cout << "Product name: " << to_utf8string(licenseDto->getProductId()) << endl;
-    cout << "License valid: " << licenseDto->isIsValid() << endl;
-    cout << "Expiration date: " << to_utf8string(licenseDto->getExpirationDateUtc().to_string()) << endl;
-    cout << "Customer company name: " << to_utf8string(licenseDto->getCustomer()->getCompanyName()) << endl;
-    cout << "Customer number: " << to_utf8string(licenseDto->getCustomer()->getCustomerNumber()) << endl;
-
-    auto features = licenseDto->getLicenseFeatures();
-    for (auto feature : features)
+    if (licenseDto->clientIdIsSet() && !licenseDto->getClientId().empty())
     {
-        cout << " - Feature name: " << to_utf8string(feature->getFeatureName()) << endl;
-        cout << "   Feature description: " << to_utf8string(feature->getFeatureDescription()) << endl;
+        cout << "Client ID: " << to_utf8string(licenseDto->getClientId()) << endl;
     }
 
-    auto limitations = licenseDto->getLicenseLimitations();
-    for (auto limitation : limitations)
+    // Customer information
+    auto customer = licenseDto->getCustomer();
+    if (customer != nullptr)
     {
-        cout << " - Limitation name: " << to_utf8string(limitation->getLimitationName()) << endl;
-        cout << "   Limitation description: " << to_utf8string(limitation->getLimitationDescription()) << endl;
-        cout << "   Limitation value: " << limitation->getLimit() << endl;
+        cout << endl << "Customer Information:" << endl;
+        cout << "---------------------" << endl;
+        if (licenseDto->customerIdIsSet())
+        {
+            cout << "Customer ID: " << to_utf8string(licenseDto->getCustomerId()) << endl;
+        }
+        cout << "Company Name: " << to_utf8string(customer->getCompanyName()) << endl;
+        cout << "Customer Number: " << to_utf8string(customer->getCustomerNumber()) << endl;
+    }
+
+    // Product information
+    cout << endl << "Product Information:" << endl;
+    cout << "--------------------" << endl;
+    cout << "Product Name: " << (licenseDto->productIdIsSet() ? to_utf8string(licenseDto->getProductId()) : "") << endl;
+    cout << "Template Name: " << (licenseDto->templateIdIsSet() ? to_utf8string(licenseDto->getTemplateId()) : "") << endl;
+
+    // License details
+    cout << endl << "License Details:" << endl;
+    cout << "----------------" << endl;
+    cout << "Is Temporary: " << licenseDto->isIsTemporary() << endl;
+
+    if (licenseDto->createdDateUtcIsSet())
+    {
+        cout << "Created Date: " << licenseDto->getCreatedDateUtc().to_string() << endl;
+    }
+
+    // Enumerate features
+    auto features = licenseDto->getLicenseFeatures();
+    if (features.empty())
+    {
+        cout << endl << "No features available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Features:" << endl;
+        for (auto feature : features)
+        {
+            cout << "- " << to_utf8string(feature->getFeatureName()) << endl;
+            cout << "   Description: " << to_utf8string(feature->getFeatureDescription()) << endl;
+        }
+    }
+
+    // Enumerate limitations
+    auto limitations = licenseDto->getLicenseLimitations();
+    if (limitations.empty())
+    {
+        cout << endl << "No limitations available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Limitations:" << endl;
+        for (auto limitation : limitations)
+        {
+            cout << " - " << to_utf8string(limitation->getLimitationName()) << " (" << limitation->getLimit() << ")" << endl;
+            cout << "   Description: " << to_utf8string(limitation->getLimitationDescription()) << endl;
+        }
     }
 
     auto constrainedVariables = licenseDto->getLicenseConstrainedVariables();
-    for (auto constrainedVariable : constrainedVariables)
+    if (constrainedVariables.empty())
     {
-        cout << " - Constrained variable name: " << to_utf8string(constrainedVariable->getVariableName()) << endl;
-        cout << "   Constrained variable description: " << to_utf8string(constrainedVariable->getVariableDescription()) << endl;
-        cout << "   Constrained variable value: ";            
-        for (auto value : constrainedVariable->getValues())
+        cout << endl << "No constrained variables available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Constrained Variables:" << endl;
+        for (auto constrainedVariable : constrainedVariables)
         {
-            cout << to_utf8string(value);
+            cout << " - " << to_utf8string(constrainedVariable->getVariableName()) << endl;
+            cout << "   Description: " << to_utf8string(constrainedVariable->getVariableDescription()) << endl;
+            cout << "   Value: ";
+            for (auto value : constrainedVariable->getValues())
+            {
+                cout << to_utf8string(value);
+            }
+            cout << endl;
         }
-        cout << endl;
     }
 
     auto variables = licenseDto->getLicenseVariables();
-    for (auto variable : variables)
+    if (variables.empty())
     {
-        cout << " - Variable name: " << to_utf8string(variable->getVariableName()) << endl;
-        cout << "   Variable description: " << to_utf8string(variable->getVariableDescription()) << endl;
-        cout << "   Variable value: " << to_utf8string(variable->getValue()) << endl;
+        cout << endl << "No variables available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Variables:" << endl;
+        for (auto variable : variables)
+        {
+            cout << " - " << to_utf8string(variable->getVariableName()) << endl;
+            cout << "   Description: " << to_utf8string(variable->getVariableDescription()) << endl;
+            cout << "   Value: " << to_utf8string(variable->getValue()) << endl;
+        }
     }
 
-    cout << endl;
-
-    if (licenseDto->isIsValid() && licenseDto->isIsSoftwareReleaseValid())
+    // User information if present
+    auto licenseUsers = licenseDto->getLicenseUsers();
+    if (!licenseUsers.empty())
     {
-        cout << "This license is valid." << endl;
-        return 0;
+        cout << endl << "License Users:" << endl;
+        cout << "Number of users: " << licenseUsers.size() << endl;
+    }
+
+    // License validity status
+    cout << endl << "License Validity Status:" << endl;
+    cout << "-----------------------" << endl;
+    cout << endl << "===> License is " << (licenseDto->isIsValid() ? "valid" : "not valid") << " <===" << endl << endl;
+
+    // Date information and license validity
+    if (licenseDto->isIsValid() && licenseDto->dateValidityIsSet() && DateValidity::eDateValidity::_0 == licenseDto->getDateValidity()->getValue())
+    {
+        if (licenseDto->expirationDateUtcIsSet())
+        {
+            // Check if it's a "9999" perpetual license
+            std::tm expirationTm = datetime_to_tm(licenseDto->getExpirationDateUtc());
+            if (expirationTm.tm_year + 1900 >= 9999) // tm_year is years since 1900
+            {
+                cout << "This is a perpetual license." << endl;
+            }
+            else
+            {
+                long valid = licenseDto->getExpirationDateUtc() - utility::datetime::utc_now(); // in seconds
+                valid /= 86400; // convert to days
+                cout << "License is valid for another " << valid << " day(s) until " << licenseDto->getExpirationDateUtc().to_string(utility::datetime::ISO_8601) << "." << endl;
+            }
+        }
+    }
+    else if (licenseDto->dateValidityIsSet())
+    {
+        switch (licenseDto->getDateValidity()->getValue())
+        {
+            case DateValidity::eDateValidity::_1:
+                cout << "License is not valid yet." << (licenseDto->startDateUtcIsSet() ? " (Start Date: " + licenseDto->getStartDateUtc().to_string(datetime::ISO_8601) + ")" : "") << endl;
+                break;
+
+            case DateValidity::eDateValidity::_2:
+                cout << (licenseDto->expirationDateUtcIsSet() ? "License has expired.since " + licenseDto->getExpirationDateUtc().to_string(datetime::ISO_8601) + "." : "License has expired.") << endl;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    if (!licenseDto->isIsValid() && !licenseDto->isIsActive())
+    {
+        cout << "License is deactivated." << endl;
     }
 
     if (licenseDto->dateValidityIsSet())
@@ -87,12 +204,12 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
 
         if (DateValidity::eDateValidity::_1 == dateValidity)
         {
-            cout << "This license is not yet valid. Valid from " << licenseDto->getStartDateUtc().to_string() << endl;
+            cout << "This license is not yet valid. Valid from " << licenseDto->getStartDateUtc().to_string(datetime::ISO_8601) << endl;
             return -1;
         }
         else if (DateValidity::eDateValidity::_2 == dateValidity)
         {
-            cout << "This license is expired. Expired at " << licenseDto->getExpirationDateUtc().to_string() << endl;
+            cout << "This license is expired. Expired at " << licenseDto->getExpirationDateUtc().to_string(datetime::ISO_8601) << endl;
             return -1;
         }
     }
@@ -103,9 +220,34 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
         return -1;
     }
 
+    // Software version information
+    auto swLimitation = licenseDto->getSoftwareReleaseLimitation();
+    if (swLimitation != nullptr)
+    {
+        cout << endl << "Software Version Information:" << endl;
+        cout << "----------------------------" << endl;
+        if (licenseDto->isIsSoftwareReleaseValid())
+        {
+            cout << "Software version is valid" << endl;
+        }
+        else
+        {
+            cout << "\n===> Software version is not valid <===\n" << endl;
+        }
+
+        if (!swLimitation->getSoftwareRelease().empty())
+        {
+            cout << "Software Release: " << swLimitation->getSoftwareRelease() << endl;
+        }
+
+        if (swLimitation->descriptionIsSet() && !swLimitation->getDescription().empty())
+        {
+            cout << "Description: " << swLimitation->getDescription() << endl;
+        }
+    }
+
     if (!licenseDto->isIsSoftwareReleaseValid())
     {
-        cout << "This license is not valid for this software release." << endl;
         return -1;
     }
 
@@ -135,20 +277,11 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseInfoDto> licenseInfoDt
         cout << "Token Key: " << to_utf8string(licenseInfoDto->getTokenKey()) << endl;
     }
 
-    cout << "License key: " << to_utf8string(licenseInfoDto->getLicenseKey()) << endl;
-    licenseInfoDto->legacyLicenseKeyIsSet() ? cout << "Legacy license key: " << to_utf8string(licenseInfoDto->getLegacyLicenseKey()) << endl : cout << "Legacy license key: not set" << endl;
-    cout << "Token key: " << to_utf8string(licenseInfoDto->getTokenKey()) << endl;
-    licenseInfoDto->licenseNameIsSet() ? cout << "License name: " << to_utf8string(licenseInfoDto->getLicenseName()) << endl : cout << "License name: not set" << endl;
-    cout << "Product name: " << to_utf8string(licenseInfoDto->getProductName()) << endl;
-    cout << "Template name: " << to_utf8string(licenseInfoDto->getTemplateName()) << endl;
-    cout << "License valid: " << licenseInfoDto->isIsLicenseValid() << endl;
-    cout << "Expiration date: " << to_utf8string(licenseInfoDto->getExpirationDateUtc().to_string()) << endl;
-
     // Customer information
     auto customer = licenseInfoDto->getCustomer();
     if (customer != nullptr)
     {
-        cout << "\nCustomer Information:" << endl;
+        cout << endl << "Customer Information:" << endl;
         cout << "---------------------" << endl;
         cout << "Customer ID: " << to_utf8string(customer->getCustomerId()) << endl;
         cout << "Company Name: " << to_utf8string(customer->getCompanyName()) << endl;
@@ -160,228 +293,187 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseInfoDto> licenseInfoDt
     }
 
     // Product information
-    cout << "\nProduct Information:" << endl;
+    cout << endl << "Product Information:" << endl;
     cout << "--------------------" << endl;
     cout << "Product Name: " << to_utf8string(licenseInfoDto->getProductName()) << endl;
     cout << "Template Name: " << to_utf8string(licenseInfoDto->getTemplateName()) << endl;
-    ProvisioningMode::eProvisioningMode provisioningMode = licenseInfoDto->getProvisioningMode()->getValue();
-    ClientType::eClientType clientType = licenseInfoDto->getClientType()->getValue();
-    cout << "Provisioning mode / client type: " << static_cast<int>(provisioningMode) << " / " << static_cast<int>(clientType) << endl;
+    shared_ptr<ProvisioningMode> provisioningMode = licenseInfoDto->getProvisioningMode();
+    shared_ptr<ClientType> clientType = licenseInfoDto->getClientType();
+    cout << "Provisioning mode / client type: " << static_cast<utility::string_t>(*provisioningMode) << " / " << static_cast<utility::string_t>(*clientType) << endl;
 
-    cout << "Session period: " << licenseInfoDto->getSessionPeriod() << endl;
-    cout << "Heartbeat period: " << licenseInfoDto->getHeartbeatPeriod() << endl;
-    cout << "Freeride: " << licenseInfoDto->getFreeride() << endl;
-
-    /*
     // License details
-    Console.WriteLine("\nLicense Details:");
-    Console.WriteLine("----------------");
-    Console.WriteLine($"Provisioning Mode: {licenseInfo.Provisioning_mode}");
-    Console.WriteLine($"Is Temporary: {licenseInfo.Is_temporary}");
-    Console.WriteLine($"Heartbeat Period: {licenseInfo.Heartbeat_period ?? 0} days");
+    cout << endl << "License Details:" << endl;
+    cout << "----------------" << endl;
+    cout << "Is Temporary: " << licenseInfoDto->isIsTemporary() << endl;
+    cout << "Heartbeat Period: " << licenseInfoDto->getHeartbeatPeriod() << " days" << endl;
 
     // Date information and license validity
-    string dateFormat = "yyyy-MM-dd HH:mm";
-    if (licenseInfo.Created_date_utc.HasValue)
+    if (licenseInfoDto->createdDateUtcIsSet())
     {
-        Console.WriteLine($"Created Date: {licenseInfo.Created_date_utc.Value.ToString(dateFormat)}");
+        cout << "Created Date: " << licenseInfoDto->getCreatedDateUtc().to_string() << endl;
     }
 
-    if (licenseInfo.Session_period is > 0)
+    if (licenseInfoDto->getSessionPeriod() > 0)
     {
-        Console.WriteLine($"Session Period: {licenseInfo.Session_period.Value} days");
+        cout << "Session Period: " << licenseInfoDto->getSessionPeriod() << " days" << endl;
     }
 
-    if (licenseInfo.Freeride is > 0)
+    if (licenseInfoDto->getFreeride() > 0)
     {
-        Console.WriteLine($"Freeride granted for {licenseInfo.Freeride.Value} day(s).");
+        cout << "Freeride granted for " << licenseInfoDto->getFreeride() << " day(s)." << endl;
     }
 
     // Enumerate features
-    if (licenseInfo.Features != null && licenseInfo.Features.Count > 0)
+    auto features = licenseInfoDto->getFeatures();
+    if (features.empty())
     {
-        Console.WriteLine("\nFeatures:");
-        foreach (var feature in licenseInfo.Features)
+        cout << endl << "No features available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Features:" << endl;
+        for (auto feature : features)
         {
-            Console.WriteLine($"- {feature.Name ?? ""} (Active: {feature.Is_active})");
-
-            if (feature.Expiration_date_utc.HasValue)
+            cout << "- " << to_utf8string(feature->getName());
+            feature->isIsActive() ? cout << endl : cout << " (not active)" << endl;
+            if (feature->descriptionIsSet() && !feature->getDescription().empty())
             {
-                Console.WriteLine($"  Expires: {feature.Expiration_date_utc.Value.ToString(dateFormat)}");
+                cout << "   Description: " << to_utf8string(feature->getDescription()) << endl;
+            }
+            if (feature->expirationDateUtcIsSet())
+            {
+                cout << "   Expires: " << feature->getExpirationDateUtc().to_string() << endl;
             }
         }
     }
-    else
-    {
-        Console.WriteLine("\nNo features available in this license.");
-    }
 
     // Enumerate limitations
-    Dictionary<Guid, (string, bool)> limitationMap;
-    if (licenseInfo.Limitations != null && licenseInfo.Limitations.Count > 0)
-    {
-        Console.WriteLine("\nLimitations:");
-        foreach (var limitation in licenseInfo.Limitations)
-        {
-            Console.WriteLine($"- {limitation.Name ?? ""}: {(limitation.Value.HasValue ? limitation.Value.Value.ToString() : "unlimited")}");
-        }
-
-        // Create a dictionary of limitations
-        limitationMap = licenseInfo.Limitations?.ToDictionary(
-                            l => l.Id,
-                            l => ($"{l.Name} (max: {l.Value})", ConsumptionResetPeriod.Disabled != l.Consumption_reset_mode));
-    }
-    else
-    {
-        Console.WriteLine("\nNo limitations available in this license.");
-        limitationMap = new Dictionary<Guid, (string Description, bool CanConsume)>();
-    }
-
-    // Enumerate variables if present
-    if (licenseInfo.Variables != null && licenseInfo.Variables.Count > 0)
-    {
-        Console.WriteLine("\nVariables:");
-        foreach (var variable in licenseInfo.Variables)
-        {
-            Console.WriteLine($"- {variable.Name ?? ""}: {variable.Value ?? ""}");
-        }
-    }
-    else
-    {
-        Console.WriteLine("\nNo variables available in this license.");
-    }
-
-    // User information if present
-    if (licenseInfo.License_users != null && licenseInfo.License_users.Count > 0)
-    {
-        Console.WriteLine("\nLicense Users:");
-        Console.WriteLine($"Number of users: {licenseInfo.License_users.Count}");
-    }
-
-    // License validity status
-    Console.WriteLine("\nLicense Validity Status:");
-    Console.WriteLine("-----------------------");
-    Console.WriteLine($"\n===> License is {(licenseInfo.Is_license_valid ? "valid" : "not valid")} <===\n");
-
-    // Date information and license validity
-    if (licenseInfo.Is_license_valid && DateValidity.IsValid == licenseInfo.Date_validity)
-    {
-        // Check if it's a "9999" perpetual license
-        if (licenseInfo.Expiration_date_utc.Value.Year >= 9999)
-        {
-            Console.WriteLine("This is a perpetual license.");
-        }
-        else
-        {
-            long valid = (licenseInfo.Expiration_date_utc.Value - DateTime.UtcNow).Days;
-            Console.WriteLine($"License is valid for another {valid} day(s) until {licenseInfo.Expiration_date_utc.Value.ToString(dateFormat)}.");
-        }
-    }
-    else
-    {
-        switch (licenseInfo.Date_validity)
-        {
-            case DateValidity.IsNotValidYet:
-                Console.WriteLine(
-                    $"License is not valid yet.{(licenseInfo.Start_date_utc.HasValue ? $" (Start Date: {licenseInfo.Start_date_utc.Value.ToString(dateFormat)}" : "")}");
-                break;
-
-            case DateValidity.IsExpired:
-                Console.WriteLine(licenseInfo.Expiration_date_utc.HasValue
-                    ? $"License has expired.since {licenseInfo.Expiration_date_utc.Value.ToString(dateFormat)}."
-                    : "License has expired.");
-                break;
-        }
-    }
-
-    if (!licenseInfo.Is_license_valid && !licenseInfo.Is_license_active)
-    {
-        Console.WriteLine("License is deactivated.");
-    }
-
-    // Software version information
-    var swLimitation = licenseInfo.Software_release_limitation;
-    if (swLimitation != null)
-    {
-        Console.WriteLine("\nSoftware Version Information:");
-        Console.WriteLine("----------------------------");
-        if (licenseInfo.Is_software_version_valid)
-            Console.WriteLine("Software version is valid");
-        else
-            Console.WriteLine("\n===> Software version is not valid <===\n");
-        Console.WriteLine($"Enforce Software Upgrade: {licenseInfo.Enforce_software_version_upgrade}");
-
-        if (!string.IsNullOrEmpty(swLimitation.Software_release))
-        {
-            Console.WriteLine($"Software Release: {swLimitation.Software_release}");
-        }
-
-        if (!string.IsNullOrEmpty(swLimitation.Description))
-        {
-            Console.WriteLine($"Description: {swLimitation.Description}");
-        }
-    }
-    */
-    
-    auto features = licenseInfoDto->getFeatures();
-    for (auto feature : features)
-    {
-        cout << " - Feature name: " << to_utf8string(feature->getName());
-        feature->isIsActive() ? cout << endl : cout << " (not active)" << endl;
-        feature->descriptionIsSet() 
-            ? cout << "   Feature description: " << to_utf8string(feature->getDescription()) << endl
-            : cout << "   Feature description: not set" << endl;
-    }
-
     auto limitations = licenseInfoDto->getLimitations();
-    for (auto limitation : limitations)
+    if (limitations.empty())
     {
-        cout << " - Limitation name: " << to_utf8string(limitation->getName()) << endl;
-        limitation->descriptionIsSet() 
-            ? cout << "   Limitation description: " << to_utf8string(limitation->getDescription()) << endl 
-            : cout << "   Limitation description: not set" << endl;
-        limitation->valueIsSet() 
-            ? cout << "   Limitation value: " << limitation->getValue() << endl
-            : cout << "   Unlimited limitation" << endl;
-        limitation->remainingIsSet() 
-            ? cout << "   Limitation remaining: " << limitation->getRemaining() << endl
-            : cout << "   Limitation remaining: not set" << endl;
-        limitation->balanceIsSet() 
-            ? cout << "   Limitation balance: " << limitation->getBalance() << endl
-            : cout << "   Limitation balance: not set" << endl;
+        cout << endl << "No limitations available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Limitations:" << endl;
+        for (auto limitation : limitations)
+        {
+            cout << " - " << to_utf8string(limitation->getName());
+             if (limitation->valueIsSet())
+             {
+                 cout << " (" << to_string(limitation->getValue()) << ")" << endl;
+             }
+             else
+             {
+                 cout << " (Unlimited)" << endl;
+             }
+
+            if (limitation->descriptionIsSet() && !limitation->getDescription().empty())
+            {
+                cout << "   Description: " << to_utf8string(limitation->getDescription()) << endl;
+            }
+
+            if (limitation->remainingIsSet())
+            {
+                cout << "   remaining: " << limitation->getRemaining() << endl;
+            }
+
+            if (limitation->balanceIsSet())
+            {
+                cout << "   balance: " << limitation->getBalance() << endl;
+            }
+        }
     }
 
     auto constrainedVariables = licenseInfoDto->getConstrainedVariables();
-    for (auto constrainedVariable : constrainedVariables)
+    if (constrainedVariables.empty())
     {
-        cout << " - Constrained variable name: " << to_utf8string(constrainedVariable->getName()) << endl;
-        constrainedVariable->descriptionIsSet() 
-            ? cout << "   Constrained variable description: " << to_utf8string(constrainedVariable->getDescription()) << endl 
-            : cout << "   Constrained variable description: not set" << endl;
-        cout << "   Constrained variable value: ";            
-        for (auto value : constrainedVariable->getValue())
+        cout << endl << "No constrained variables available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Constrained Variables:" << endl;
+        for (auto constrainedVariable : constrainedVariables)
         {
-            cout << to_utf8string(value);
+            cout << " - " << to_utf8string(constrainedVariable->getName()) << endl;
+            if (constrainedVariable->descriptionIsSet() && !constrainedVariable->getDescription().empty()) 
+            {
+                cout << "   Description: " << to_utf8string(constrainedVariable->getDescription()) << endl;
+            }
+            cout << "   Value: ";            
+            for (auto value : constrainedVariable->getValue())
+            {
+                cout << to_utf8string(value);
+            }
+            cout << endl;
         }
-        cout << endl;
     }
 
     auto variables = licenseInfoDto->getVariables();
-    for (auto variable : variables)
+    if (variables.empty())
     {
-        cout << " - Variable name: " << to_utf8string(variable->getName()) << endl;
-        variable->descriptionIsSet() 
-                ? cout << "   Variable description: " << to_utf8string(variable->getDescription()) << endl
-                : cout << "   Variable description: not set" << endl;
-        cout << "   Variable value: " << to_utf8string(variable->getValue()) << endl;
+        cout << endl << "No variables available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Variables:" << endl;
+        for (auto variable : variables)
+        {
+            cout << " - " << to_utf8string(variable->getName()) << endl;
+            if (variable->descriptionIsSet() && !variable->getDescription().empty())
+            {
+                cout << "   Description: " << to_utf8string(variable->getDescription()) << endl;
+            }
+            cout << "   Value: " << to_utf8string(variable->getValue()) << endl;
+        }
     }
 
-    cout << endl;
-
-    if (licenseInfoDto->isIsLicenseValid() && licenseInfoDto->isIsSoftwareVersionValid())
+    // User information if present
+    auto licenseUsers = licenseInfoDto->getLicenseUsers();
+    if (!licenseUsers.empty())
     {
-        cout << "This license is valid." << endl;
-        return 0;
+        cout << endl << "License Users:" << endl;
+        cout << "Number of users: " << licenseUsers.size() << endl;
+    }
+
+    // License validity status
+    cout << endl << "License Validity Status:" << endl;
+    cout << "-----------------------" << endl;
+    cout << endl << "===> License is " << (licenseInfoDto->isIsLicenseValid() ? "valid" : "not valid") << " <===" << endl << endl;
+
+    // Date information and license validity
+    if (licenseInfoDto->isIsLicenseValid() && DateValidity::eDateValidity::_0 == licenseInfoDto->getDateValidity()->getValue())
+    {
+        // Check if it's a "9999" perpetual license
+        std::tm expirationTm = datetime_to_tm(licenseInfoDto->getExpirationDateUtc());
+        if (expirationTm.tm_year +1900 >= 9999) // tm_year is years since 1900
+        {
+            cout << "This is a perpetual license." << endl;
+        }
+        else
+        {
+            long valid = licenseInfoDto->getExpirationDateUtc() - utility::datetime::utc_now(); // in seconds
+            valid /= 86400; // convert to days
+            cout << "License is valid for another " << valid << " day(s) until " << licenseInfoDto->getExpirationDateUtc().to_string(utility::datetime::ISO_8601) << "." << endl;
+        }
+    }
+    else
+    {
+        switch (licenseInfoDto->getDateValidity()->getValue())
+        {
+            case DateValidity::eDateValidity::_1:
+                cout << "License is not valid yet." << (licenseInfoDto->startDateUtcIsSet() ? " (Start Date: " + licenseInfoDto->getStartDateUtc().to_string(datetime::ISO_8601) + ")" : "") << endl;
+                break;
+
+            case DateValidity::eDateValidity::_2:
+                cout << (licenseInfoDto->expirationDateUtcIsSet() ? "License has expired.since " + licenseInfoDto->getExpirationDateUtc().to_string(datetime::ISO_8601) + "." : "License has expired.") << endl;
+                break;
+        }
+    }
+
+    if (!licenseInfoDto->isIsLicenseValid() && !licenseInfoDto->isIsLicenseActive())
+    {
+        cout << "License is deactivated." << endl;
     }
 
     if (licenseInfoDto->dateValidityIsSet())
@@ -391,12 +483,12 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseInfoDto> licenseInfoDt
 
         if (DateValidity::eDateValidity::_1 == dateValidity)
         {
-            cout << "This license is not yet valid. Valid from " << licenseInfoDto->getStartDateUtc().to_string() << endl;
+            cout << "This license is not yet valid. Valid from " << licenseInfoDto->getStartDateUtc().to_string(datetime::ISO_8601) << endl;
             return -1;
         }
         else if (DateValidity::eDateValidity::_2 == dateValidity)
         {
-            cout << "This license is expired. Expired at " << licenseInfoDto->getExpirationDateUtc().to_string() << endl;
+            cout << "This license is expired. Expired at " << licenseInfoDto->getExpirationDateUtc().to_string(datetime::ISO_8601) << endl;
             return -1;
         } 
     }
@@ -407,9 +499,35 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseInfoDto> licenseInfoDt
         return -1;
     }
 
+    // Software version information
+    auto swLimitation = licenseInfoDto->getSoftwareReleaseLimitation();
+    if (swLimitation != nullptr)
+    {
+        cout << endl << "Software Version Information:" << endl;
+        cout << "----------------------------" << endl;
+        if (licenseInfoDto->isIsSoftwareVersionValid())
+        {
+            cout << "Software version is valid" << endl;
+        }
+        else
+        {
+            cout << "\n===> Software version is not valid <===\n" << endl;
+        }
+        cout << "Enforce Software Upgrade: " << licenseInfoDto->isEnforceSoftwareVersionUpgrade() << endl;
+
+        if (!swLimitation->getSoftwareRelease().empty())
+        {
+            cout << "Software Release: " << swLimitation->getSoftwareRelease() << endl;
+        }
+
+        if (swLimitation->descriptionIsSet() && !swLimitation->getDescription().empty())
+        {
+            cout << "Description: " << swLimitation->getDescription() << endl;
+        }
+    }
+    
     if (!licenseInfoDto->isIsSoftwareVersionValid())
     {
-        cout << "This license is not valid for this software release." << endl;
         return -1;
     }
 

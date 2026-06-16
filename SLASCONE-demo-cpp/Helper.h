@@ -40,6 +40,7 @@ namespace SLASCONE_demo_cpp
         int send_license_heartbeat();
         int find_temp_offline_license();
         int unassign_token();
+        int lookup_license_info();
         int send_analytical_heartbeat();
         int send_usage_heartbeat();
         int send_consumption_heartbeat();
