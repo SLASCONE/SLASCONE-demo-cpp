@@ -61,17 +61,43 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
     // Product information
     cout << endl << "Product Information:" << endl;
     cout << "--------------------" << endl;
-    cout << "Product Name: " << (licenseDto->productIdIsSet() ? to_utf8string(licenseDto->getProductId()) : "") << endl;
-    cout << "Template Name: " << (licenseDto->templateIdIsSet() ? to_utf8string(licenseDto->getTemplateId()) : "") << endl;
+    cout << "Product ID: " << (licenseDto->productIdIsSet() ? to_utf8string(licenseDto->getProductId()) : "") << endl;
+    auto product = licenseDto->getProduct();
+    if (product != nullptr)
+    {
+        cout << "Product Name: " << to_utf8string(product->getName()) << endl;
+    }
+    cout << "Template ID: " << (licenseDto->templateIdIsSet() ? to_utf8string(licenseDto->getTemplateId()) : "") << endl;
+    auto rtemplate = licenseDto->getRTemplate();
+    if (rtemplate != nullptr)
+    {
+        cout << "Template Name: " << to_utf8string(rtemplate->getName()) << endl;
+        if (rtemplate->provisioningModeIsSet() && rtemplate->clientTypeIsSet())
+        {
+            shared_ptr<ProvisioningMode> provisioningMode = rtemplate->getProvisioningMode();
+            shared_ptr<ClientType> clientType = rtemplate->getClientType();
+            cout << "Provisioning mode / client type: " << static_cast<utility::string_t>(*provisioningMode) << " / " << static_cast<utility::string_t>(*clientType) << endl;
+        }
+    }
 
     // License details
     cout << endl << "License Details:" << endl;
     cout << "----------------" << endl;
     cout << "Is Temporary: " << licenseDto->isIsTemporary() << endl;
 
-    if (licenseDto->createdDateUtcIsSet())
+    if (licenseDto->licenseTypeIdIsSet() && licenseDto->licenseTypeIsSet()) 
     {
+        cout << "License Type ID: " << to_utf8string(licenseDto->getLicenseTypeId()) << endl;
+        cout << "License Type: " << to_utf8string(licenseDto->getLicenseType()->getName()) << endl;
+    }
+
+    if (licenseDto->createdDateUtcIsSet() && licenseDto->modifiedDateUtcIsSet() && licenseDto->lastModifiedByIsSet())
+    {
+        cout << endl << "License Dates:" << endl;
+        cout << "--------------" << endl;
         cout << "Created Date: " << licenseDto->getCreatedDateUtc().to_string() << endl;
+        cout << "Modified Date: " << licenseDto->getModifiedDateUtc().to_string() << endl;
+        cout << "Last Modified By: " << to_utf8string(licenseDto->getLastModifiedBy()) << endl;
     }
 
     // Enumerate features
@@ -85,8 +111,25 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
         cout << endl << "Features:" << endl;
         for (auto feature : features)
         {
-            cout << "- " << to_utf8string(feature->getFeatureName()) << endl;
-            cout << "   Description: " << to_utf8string(feature->getFeatureDescription()) << endl;
+            cout << "- " << to_utf8string(feature->getFeatureName());
+            if (feature->isActiveIsSet() && !feature->isIsActive())
+            {
+                cout << " (not active)";
+            }   
+            cout << endl;
+            if (feature->featureDescriptionIsSet() && !feature->getFeatureDescription().empty())
+            {
+                cout << "   Description: " << to_utf8string(feature->getFeatureDescription()) << endl;
+            }
+            if (feature->featureExceptionsIsSet() && feature->getFeatureExceptions()->exceptionsIsSet() && !feature->getFeatureExceptions()->getExceptions().empty())
+            {
+                auto exceptions = feature->getFeatureExceptions();
+                cout << "   Exceptions:" << endl;
+                for (const auto& exception : exceptions->getExceptions())
+                {
+                    cout << "     - From " << exception->getStartDateUtc().to_string() << " to " << exception->getEndDateUtc().to_string() << (exception->temporaryIsActiveIsSet() && exception->isTemporaryIsActive() ? " (temporary active)" : "") << endl;
+                }
+            }
         }
     }
 
@@ -101,7 +144,16 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
         cout << endl << "Limitations:" << endl;
         for (auto limitation : limitations)
         {
-            cout << " - " << to_utf8string(limitation->getLimitationName()) << " (" << limitation->getLimit() << ")" << endl;
+            cout << " - " << to_utf8string(limitation->getLimitationName());
+            if (limitation->limitIsSet())
+            {
+                cout << " (Limit: " << limitation->getLimit() << ")" << endl;
+            }
+            else
+            {
+                cout << " (unlimited)" << endl;
+            }
+            
             cout << "   Description: " << to_utf8string(limitation->getLimitationDescription()) << endl;
         }
     }
@@ -117,7 +169,10 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
         for (auto constrainedVariable : constrainedVariables)
         {
             cout << " - " << to_utf8string(constrainedVariable->getVariableName()) << endl;
-            cout << "   Description: " << to_utf8string(constrainedVariable->getVariableDescription()) << endl;
+            if (constrainedVariable->variableDescriptionIsSet() && !constrainedVariable->getVariableDescription().empty())
+            {
+                cout << "   Description: " << to_utf8string(constrainedVariable->getVariableDescription()) << endl;
+            }
             cout << "   Value: ";
             for (auto value : constrainedVariable->getValues())
             {
@@ -305,7 +360,10 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseInfoDto> licenseInfoDt
     cout << endl << "License Details:" << endl;
     cout << "----------------" << endl;
     cout << "Is Temporary: " << licenseInfoDto->isIsTemporary() << endl;
-    cout << "Heartbeat Period: " << licenseInfoDto->getHeartbeatPeriod() << " days" << endl;
+    if (licenseInfoDto->heartbeatPeriodIsSet())
+    {
+        cout << "Heartbeat Period: " << licenseInfoDto->getHeartbeatPeriod() << " days" << endl;
+    }
 
     // Date information and license validity
     if (licenseInfoDto->createdDateUtcIsSet())

@@ -25,7 +25,7 @@ const string baseUrl = "https://api.slascone.com";
 //const string baseUrl = "https://api365.slascone.com";
 
 // ISV ID
-const string isvId = "2af5fe02-6207-4214-946e-b00ac5309f53"; // Find your own Isv Id at : https://my.slascone.com/administration/apikeys
+const string isvId = /* "ffc4524e-3616-4eb2-aa16-d031e71441f3"; // */ "2af5fe02-6207-4214-946e-b00ac5309f53"; // Find your own Isv Id at : https://my.slascone.com/administration/apikeys
 
 // Product ID
 const string productId = "b18657cc-1f7c-43fa-e3a4-08da6fa41ad3"; // Find your own product id key at : https://my.slascone.com/products
@@ -34,12 +34,22 @@ const string productId = "b18657cc-1f7c-43fa-e3a4-08da6fa41ad3"; // Find your ow
 const string provisioningKeyHeader = "ProvisioningKey";
 
 // Provisioning key
-const string provisioningKey = "NfEpJ2DFfgczdYqOjvmlgP2O/4VlqmRHXNE9xDXbqZcOwXTbH3TFeBAKKbEzga7D7ashHxFtZOR142LYgKWdNocibDgN75/P58YNvUZafLdaie7eGwI/2gX/XuDPtqDW";
+const string provisioningKey = /* "NfEpJ2DFfgemj+X9DGz2KNOIyJ0KfxjTpGZUUh9JmURS0+TN//DWm7t8HGEjXn6Ov8YUl2RAVPBusLExPkJkzPRVwDFRxIAe+vJ7REYTm4bU5PbT3wpoxdrw4M8h+L45"; // */ "NfEpJ2DFfgczdYqOjvmlgP2O/4VlqmRHXNE9xDXbqZcOwXTbH3TFeBAKKbEzga7D7ashHxFtZOR142LYgKWdNocibDgN75/P58YNvUZafLdaie7eGwI/2gX/XuDPtqDW";
 
 const string licenseKey = "5a61ceaa-d720-488f-83a2-da6e1efa51f6"; // "27180460-29df-4a5a-a0a1-78c85ab6cee0"; // Just for demo, do not change this
 
 // CHANGE these values according to your environment at: https://my.slascone.com/administration/signature
-const string pemKey =
+const string pemKey = /*
+R"(-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyI8dVMGE+8f8Zt8c53Du
+Z121oJOcmzOgTdChYGxiaewd5H84V03uRoT2YBTMT7qD76KOQ3uO9AVIPv2VRBGS
+7IzvuquuQt5ef5QWUhhxanUhnN51zv807ie1uxeirMwSeNRGMu47VLoEK9Bgk4cM
+osDiO+td9wrStUMkeTdET63GMZ0jYlmdhW8+AA4rBcJa5gK0LIyqq4EOoAsw7VlA
+P5+d80CmklHMyQvmMDonprIA30BxNJCwxpSLAbHmVzk6lfdki4hK4uD22VxmiPxu
+ikvUatu131KTrAknequ8SloEniGwA6hkVN6IGLTHnSmxUyvtJUNpaaOfOwa8GvT+
+vQIDAQAB
+-----END PUBLIC KEY-----)"; */
+
 R"(-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwpigzm+cZIyw6x253YRD
 mroGQyo0rO9qpOdbNAkE/FMSX+At5CQT/Cyr0eZTo2h+MO5gn5a6dwg2SYB/K1Yt
@@ -344,7 +354,7 @@ int Helper::lookup_license_info()
     }
     else
     {
-        cout << licenses.size() << " Licenses found for the given license key:" << endl;
+        cout << licenses.size() << " license(s) found for the given license key:" << endl;
         for (const auto& license : licenses)
         {
             LicensePrettyPrinter::print_license(license);
