@@ -125,12 +125,6 @@ int main(int argc, const char *argv[])
             // Read license file
             cout << "Reading license file..." << endl;
 			LicenseXmlHelper::print_license_infos("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e.xml");
-
-            cout << "------------------------------------------------------------" << endl;
-			LicenseXmlHelper::print_license_infos("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e_Level-210.xml");
-
-            cout << "------------------------------------------------------------" << endl;
-			LicenseXmlHelper::print_license_infos("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e-Level-220.xml");
         }
         else if (input == "13")
         {

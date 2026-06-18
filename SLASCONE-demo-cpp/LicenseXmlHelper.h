@@ -28,5 +28,6 @@ namespace SLASCONE_demo_cpp
         static int fromXml(shared_ptr<ProvisioningLimitationDto> &limitation, xmlNodePtr rootNode);
         static int fromXml(shared_ptr<ProvisioningConstrainedVariableDto> &variable, xmlNodePtr rootNode);
         static int fromXml(shared_ptr<ProvisioningVariableDto> &variable, xmlNodePtr rootNode);
+        static int fromXml(shared_ptr<SoftwareReleaseLimitationDto> &variable, const char* xml_file);
     };
 }

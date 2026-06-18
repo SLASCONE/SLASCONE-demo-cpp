@@ -11,16 +11,6 @@ using namespace utility;
 using namespace utility::conversions;
 using namespace SLASCONE_demo_cpp;
 
-std::tm datetime_to_tm(const utility::datetime& dt)
-{
-    int64_t ticks = dt.to_interval();  // 100-ns ticks since 1601
-    int64_t total_seconds = ticks / 10'000'000;  // convert to seconds
-    std::time_t tt = static_cast<std::time_t>(total_seconds - 11644473600LL);
-    std::tm tm{};    
-    gmtime_r(&tt, &tm); // or gmtime_s on Windows
-    return tm;
-}
-
 int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
 {
     if (licenseDto == nullptr)
@@ -206,6 +196,7 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
         cout << "Number of users: " << licenseUsers.size() << endl;
     }
 
+    /*
     // License validity status
     cout << endl << "License Validity Status:" << endl;
     cout << "-----------------------" << endl;
@@ -268,6 +259,7 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
             return -1;
         }
     }
+    */
 
     if (!licenseDto->isIsActive())
     {
@@ -494,6 +486,7 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseInfoDto> licenseInfoDt
         cout << "Number of users: " << licenseUsers.size() << endl;
     }
 
+    /*
     // License validity status
     cout << endl << "License Validity Status:" << endl;
     cout << "-----------------------" << endl;
@@ -550,6 +543,7 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseInfoDto> licenseInfoDt
             return -1;
         } 
     }
+    */
 
     if (!licenseInfoDto->isIsLicenseActive())
     {

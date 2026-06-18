@@ -1,4 +1,5 @@
 #include "LicenseXmlHelper.h"
+#include "ReleaseCheck.h"
 #include <iostream>
 #include <memory>
 #include <string>
@@ -6,6 +7,8 @@
 
 using namespace utility::conversions;
 using namespace SLASCONE_demo_cpp;
+
+const string softwareRelease = "26.1";
 
 int LicenseXmlHelper::print_license_infos(const char* xml_file)
 {
@@ -36,47 +39,325 @@ int LicenseXmlHelper::print_license_infos(const char* xml_file)
         xmlFreeDoc(doc); 
         return(-1);
     }
-    
-    /* Evaluate xpath expressions */
-    const xmlChar* xpathExprs[] = {
-        BAD_CAST "/slascone_license_file/license_key",
-        BAD_CAST "/slascone_license_file/legacy_license_key",
-        BAD_CAST "/slascone_license_file/license_name",
-        BAD_CAST "/slascone_license_file/product_id",
-        BAD_CAST "/slascone_license_file/expiration_date_utc",
-        BAD_CAST "/slascone_license_file/customer/company_name",
-	    BAD_CAST "/slascone_license_file/session_period",
-	    BAD_CAST "/slascone_license_file/heartbeat_period",
-	    BAD_CAST "/slascone_license_file/freeride",
-        nullptr
+
+    auto get_first_text = [&](const xmlChar* xpathExpr) -> string {
+        xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(xpathExpr, xpathCtx);
+        if (xpathObj == nullptr || xpathObj->nodesetval == nullptr || xpathObj->nodesetval->nodeNr == 0)
+        {
+            if (xpathObj != nullptr)
+            {
+                xmlXPathFreeObject(xpathObj);
+            }
+            return "";
+        }
+
+        xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
+        xmlChar* content = xmlNodeGetContent(node);
+        string result = (content != nullptr) ? reinterpret_cast<const char*>(content) : "";
+        if (content != nullptr)
+        {
+            xmlFree(content);
+        }
+        xmlXPathFreeObject(xpathObj);
+        return result;
     };
 
-    for (int i = 0; xpathExprs[i] != nullptr; i++)
+    auto node_exists = [&](const xmlChar* xpathExpr) -> bool {
+        xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(xpathExpr, xpathCtx);
+        bool exists = xpathObj != nullptr && xpathObj->nodesetval != nullptr && xpathObj->nodesetval->nodeNr > 0;
+        if (xpathObj != nullptr)
+        {
+            xmlXPathFreeObject(xpathObj);
+        }
+        return exists;
+    };
+
+    // Display the main properties of the license
+    cout << "\nLicense Information:" << endl;
+    cout << "-------------------" << endl;
+    cout << "License Name: " << get_first_text(BAD_CAST "/slascone_license_file/license_name") << endl;
+    cout << "License Key: " << get_first_text(BAD_CAST "/slascone_license_file/license_key") << endl;
+
+    string legacyLicenseKey = get_first_text(BAD_CAST "/slascone_license_file/legacy_license_key");
+    if (!legacyLicenseKey.empty())
     {
-        if (eval_xpath_expression(xpathExprs[i], xpathCtx, print_xpath_nodes) < 0) {
-            fprintf(stderr,"Error: unable to evaluate xpath expression \"%s\"\n", xpathExprs[i]);
+        cout << "Legacy License Key: " << legacyLicenseKey << endl;
+    }
+
+    string clientId = get_first_text(BAD_CAST "/slascone_license_file/client_id");
+    if (!clientId.empty())
+    {
+        cout << "Client ID: " << clientId << endl;
+    }
+
+    // Customer information
+    string companyName = get_first_text(BAD_CAST "/slascone_license_file/customer/company_name");
+    string customerNumber = get_first_text(BAD_CAST "/slascone_license_file/customer/customer_number");
+    string customerId = get_first_text(BAD_CAST "/slascone_license_file/customer_id");
+    if (!companyName.empty() || !customerNumber.empty() || !customerId.empty())
+    {
+        cout << endl << "Customer Information:" << endl;
+        cout << "---------------------" << endl;
+        if (!customerId.empty())
+        {
+            cout << "Customer ID: " << customerId << endl;
+        }
+        cout << "Company Name: " << companyName << endl;
+        cout << "Customer Number: " << customerNumber << endl;
+    }
+
+    // Product information
+    cout << endl << "Product Information:" << endl;
+    cout << "--------------------" << endl;
+    cout << "Product ID: " << get_first_text(BAD_CAST "/slascone_license_file/product_id") << endl;
+    string productName = get_first_text(BAD_CAST "/slascone_license_file/product_name");
+    if (!productName.empty())
+    {
+        cout << "Product Name: " << productName << endl;
+    }
+    cout << "Template ID: " << get_first_text(BAD_CAST "/slascone_license_file/template_id") << endl;
+    string templateName = get_first_text(BAD_CAST "/slascone_license_file/template_name");
+    if (!templateName.empty())
+    {
+        cout << "Template Name: " << templateName << endl;
+    }
+    string provisioningMode = get_first_text(BAD_CAST "/slascone_license_file/provisioning_mode");
+    string clientType = get_first_text(BAD_CAST "/slascone_license_file/client_type");
+    if (!provisioningMode.empty() && !clientType.empty())
+    {
+        cout << "Provisioning mode / client type: " << provisioningMode << " / " << clientType << endl;
+    }
+
+    // License details
+    cout << endl << "License Details:" << endl;
+    cout << "----------------" << endl;
+    string isTemporary = get_first_text(BAD_CAST "/slascone_license_file/is_temporary");
+    cout << "Is Temporary: " << (!isTemporary.empty() ? isTemporary : "false") << endl;
+
+    string licenseTypeId = get_first_text(BAD_CAST "/slascone_license_file/license_type_id");
+    string licenseTypeName = get_first_text(BAD_CAST "/slascone_license_file/license_type/name");
+    if (!licenseTypeId.empty() && !licenseTypeName.empty())
+    {
+        cout << "License Type ID: " << licenseTypeId << endl;
+        cout << "License Type: " << licenseTypeName << endl;
+    }
+
+    string createdDate = get_first_text(BAD_CAST "/slascone_license_file/created_date_utc");
+    string modifiedDate = get_first_text(BAD_CAST "/slascone_license_file/modified_date_utc");
+    string lastModifiedBy = get_first_text(BAD_CAST "/slascone_license_file/last_modified_by");
+    if (!createdDate.empty() && !modifiedDate.empty() && !lastModifiedBy.empty())
+    {
+        cout << endl << "License Dates:" << endl;
+        cout << "--------------" << endl;
+        cout << "Created Date: " << createdDate << endl;
+        cout << "Modified Date: " << modifiedDate << endl;
+        cout << "Last Modified By: " << lastModifiedBy << endl;
+    }
+
+    // Enumerate features
+    xmlXPathObjectPtr featuresObj = xmlXPathEvalExpression(BAD_CAST "/slascone_license_file/features", xpathCtx);
+    xmlNodeSetPtr featureNodes = (featuresObj != nullptr) ? featuresObj->nodesetval : nullptr;
+    int featureCount = (featureNodes != nullptr) ? featureNodes->nodeNr : 0;
+    if (featureCount == 0)
+    {
+        cout << endl << "No features available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Features:" << endl;
+        for (int i = 0; i < featureCount; ++i)
+        {
+            shared_ptr<ProvisioningFeatureDto> feature = make_shared<ProvisioningFeatureDto>();
+            fromXml(feature, featureNodes->nodeTab[i]);
+
+            cout << "- " << to_utf8string(feature->getName());
+            if (!feature->isIsActive())
+            {
+                cout << " (not active)";
+            }
+            cout << endl;
+
+            if (feature->descriptionIsSet() && !feature->getDescription().empty())
+            {
+                cout << "   Description: " << to_utf8string(feature->getDescription()) << endl;
+            }
+        }
+    }
+    if (featuresObj != nullptr)
+    {
+        xmlXPathFreeObject(featuresObj);
+    }
+
+    // Enumerate limitations
+    xmlXPathObjectPtr limitationsObj = xmlXPathEvalExpression(BAD_CAST "/slascone_license_file/limitations", xpathCtx);
+    xmlNodeSetPtr limitationNodes = (limitationsObj != nullptr) ? limitationsObj->nodesetval : nullptr;
+    int limitationCount = (limitationNodes != nullptr) ? limitationNodes->nodeNr : 0;
+    if (limitationCount == 0)
+    {
+        cout << endl << "No limitations available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Limitations:" << endl;
+        for (int i = 0; i < limitationCount; ++i)
+        {
+            shared_ptr<ProvisioningLimitationDto> limitation = make_shared<ProvisioningLimitationDto>();
+            fromXml(limitation, limitationNodes->nodeTab[i]);
+
+            cout << " - " << to_utf8string(limitation->getName());
+            if (limitation->valueIsSet())
+            {
+                cout << " (Limit: " << limitation->getValue() << ")" << endl;
+            }
+            else
+            {
+                cout << " (unlimited)" << endl;
+            }
+
+            if (limitation->descriptionIsSet() && !limitation->getDescription().empty())
+            {
+                cout << "   Description: " << to_utf8string(limitation->getDescription()) << endl;
+            }
+        }
+    }
+    if (limitationsObj != nullptr)
+    {
+        xmlXPathFreeObject(limitationsObj);
+    }
+
+    // Enumerate constrained variables
+    xmlXPathObjectPtr constrainedObj = xmlXPathEvalExpression(BAD_CAST "/slascone_license_file/constrained_variables", xpathCtx);
+    xmlNodeSetPtr constrainedNodes = (constrainedObj != nullptr) ? constrainedObj->nodesetval : nullptr;
+    int constrainedCount = (constrainedNodes != nullptr) ? constrainedNodes->nodeNr : 0;
+    if (constrainedCount == 0)
+    {
+        cout << endl << "No constrained variables available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Constrained Variables:" << endl;
+        for (int i = 0; i < constrainedCount; ++i)
+        {
+            shared_ptr<ProvisioningConstrainedVariableDto> variable = make_shared<ProvisioningConstrainedVariableDto>();
+            fromXml(variable, constrainedNodes->nodeTab[i]);
+
+            cout << " - " << to_utf8string(variable->getName()) << endl;
+            if (variable->descriptionIsSet() && !variable->getDescription().empty())
+            {
+                cout << "   Description: " << to_utf8string(variable->getDescription()) << endl;
+            }
+            cout << "   Value: ";
+            for (auto value : variable->getValue())
+            {
+                cout << to_utf8string(value);
+            }
+            cout << endl;
+        }
+    }
+    if (constrainedObj != nullptr)
+    {
+        xmlXPathFreeObject(constrainedObj);
+    }
+
+    // Enumerate variables
+    xmlXPathObjectPtr variablesObj = xmlXPathEvalExpression(BAD_CAST "/slascone_license_file/variables", xpathCtx);
+    xmlNodeSetPtr variableNodes = (variablesObj != nullptr) ? variablesObj->nodesetval : nullptr;
+    int variableCount = (variableNodes != nullptr) ? variableNodes->nodeNr : 0;
+    if (variableCount == 0)
+    {
+        cout << endl << "No variables available in this license." << endl;
+    }
+    else
+    {
+        cout << endl << "Variables:" << endl;
+        for (int i = 0; i < variableCount; ++i)
+        {
+            shared_ptr<ProvisioningVariableDto> variable = make_shared<ProvisioningVariableDto>();
+            fromXml(variable, variableNodes->nodeTab[i]);
+
+            cout << " - " << to_utf8string(variable->getName()) << endl;
+            cout << "   Description: " << to_utf8string(variable->getDescription()) << endl;
+            cout << "   Value: " << to_utf8string(variable->getValue()) << endl;
+        }
+    }
+    if (variablesObj != nullptr)
+    {
+        xmlXPathFreeObject(variablesObj);
+    }
+
+    // User information if present
+    xmlXPathObjectPtr usersObj = xmlXPathEvalExpression(BAD_CAST "/slascone_license_file/license_users", xpathCtx);
+    int userCount = (usersObj != nullptr && usersObj->nodesetval != nullptr) ? usersObj->nodesetval->nodeNr : 0;
+    if (userCount > 0)
+    {
+        cout << endl << "License Users:" << endl;
+        cout << "Number of users: " << userCount << endl;
+    }
+    if (usersObj != nullptr)
+    {
+        xmlXPathFreeObject(usersObj);
+    }
+
+    // License validity status
+    cout << endl << "License Validity Status:" << endl;
+    cout << "-----------------------" << endl;
+
+    // Since a license file is created once but read many times the validity status has to be checked every time 
+    // separately from the start date and the expiration date, to make sure the license is valid at the moment of reading it.
+
+    time_t now = time(nullptr);
+    // std::tm utcNow = {};
+    // gmtime_r(&now, &utcNow);
+
+    bool isNotYetValid = true;
+    string startDateUtc = get_first_text(BAD_CAST "/slascone_license_file/start_date_utc");
+    if (!startDateUtc.empty())
+    {
+        std::tm startTm = {};
+        bool startDateValid = !startDateUtc.empty() && strptime(startDateUtc.c_str(), "%Y-%m-%dT%H:%M:%SZ", &startTm) != nullptr;
+
+        isNotYetValid = startDateValid && 0 < difftime(timegm(&startTm), now);
+    }
+
+    bool isExpired = true;
+    bool isPerpetualLicense = false;
+    string expirationDateUtc = get_first_text(BAD_CAST "/slascone_license_file/expiration_date_utc");
+    if (!expirationDateUtc.empty())
+    {
+        std::tm expirationTm = {};
+        bool expirationDateValid = !expirationDateUtc.empty() && strptime(expirationDateUtc.c_str(), "%Y-%m-%dT%H:%M:%SZ", &expirationTm) != nullptr;
+
+        isExpired = expirationDateValid && difftime(timegm(&expirationTm), now) < 0;
+
+        expirationTm.tm_year += 1900; // Adjust year since tm_year is years since 1900
+        isPerpetualLicense = (9999 == expirationTm.tm_year);
+    }
+
+    bool valid = !(isNotYetValid || isExpired);
+
+    cout << endl << "===> License is " << (valid ? "valid" : "not valid") << " <===" << endl << endl;
+
+    if (isNotYetValid)
+    {
+        cout << "License is valid from " << startDateUtc << "." << endl;
+    }
+
+    if (isExpired)    
+    {
+        cout << "The license is expired since " << expirationDateUtc << "." << endl;
+    }
+    else
+    {
+        if (isPerpetualLicense)
+        {
+            cout << "This is a perpetual license." << endl;
+        }
+        else
+        {
+            cout << "License is valid until " << expirationDateUtc << "." << endl;
         }
     }
 
-    const xmlChar* xpathExpr = BAD_CAST "/slascone_license_file/features";
-    if (eval_xpath_expression(xpathExpr, xpathCtx, print_features) < 0) {
-        fprintf(stderr,"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr);
-    }
-
-    xpathExpr = BAD_CAST "/slascone_license_file/limitations";
-    if (eval_xpath_expression(xpathExpr, xpathCtx, print_limitations) < 0) {
-        fprintf(stderr,"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr);
-    }
-
-    xpathExpr = BAD_CAST "/slascone_license_file/constrained_variables";
-    if (eval_xpath_expression(xpathExpr, xpathCtx, print_constrained_variables) < 0) {
-        fprintf(stderr,"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr);
-    }
-
-    xpathExpr = BAD_CAST "/slascone_license_file/variables";
-    if (eval_xpath_expression(xpathExpr, xpathCtx, print_variable) < 0) {
-        fprintf(stderr,"Error: unable to evaluate xpath expression \"%s\"\n", xpathExpr);
-    }
 
     /* Cleanup */
     xmlXPathFreeContext(xpathCtx); 
@@ -383,5 +664,89 @@ int LicenseXmlHelper::fromXml(shared_ptr<ProvisioningVariableDto> &variable, xml
             }
         }
     }
+    return 0;
+}
+
+int LicenseXmlHelper::fromXml(shared_ptr<SoftwareReleaseLimitationDto> &releaseLimitation, const char* xml_file)
+{
+    xmlDocPtr doc;
+    xmlXPathContextPtr xpathCtx; 
+
+    assert(xml_file);
+
+    /*
+     * this initialize the library and check potential ABI mismatches
+     * between the version it was compiled for and the actual shared
+     * library used.
+     */
+    xmlInitParser();
+    LIBXML_TEST_VERSION
+
+    /* Load XML document */
+    doc = xmlParseFile(xml_file);
+    if (doc == NULL) {
+        cerr << "Error: unable to parse file \"" << xml_file << "\"" << endl;
+        return(-1);
+    }
+
+    /* Create xpath evaluation context */
+    xpathCtx = xmlXPathNewContext(doc);
+    if(xpathCtx == NULL) {
+        cerr << "Error: unable to create new XPath context" << endl;
+        xmlFreeDoc(doc); 
+        return(-1);
+    }
+
+    auto get_first_text = [&](const xmlChar* xpathExpr) -> string {
+        xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(xpathExpr, xpathCtx);
+        if (xpathObj == nullptr || xpathObj->nodesetval == nullptr || xpathObj->nodesetval->nodeNr == 0)
+        {
+            if (xpathObj != nullptr)
+            {
+                xmlXPathFreeObject(xpathObj);
+            }
+            return "";
+        }
+
+        xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
+        xmlChar* content = xmlNodeGetContent(node);
+        string result = (content != nullptr) ? reinterpret_cast<const char*>(content) : "";
+        if (content != nullptr)
+        {
+            xmlFree(content);
+        }
+        xmlXPathFreeObject(xpathObj);
+        return result;
+    };
+
+    auto node_exists = [&](const xmlChar* xpathExpr) -> bool {
+        xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression(xpathExpr, xpathCtx);
+        bool exists = xpathObj != nullptr && xpathObj->nodesetval != nullptr && xpathObj->nodesetval->nodeNr > 0;
+        if (xpathObj != nullptr)
+        {
+            xmlXPathFreeObject(xpathObj);
+        }
+        return exists;
+    };
+
+    // Software version information
+    bool hasSwSection = node_exists(BAD_CAST "/slascone_license_file/software_release_limitation");
+    if (!hasSwSection)
+    {
+        return -1; // No software release limitation section, so nothing to populate
+    }
+
+    string softwareRelease = get_first_text(BAD_CAST "/slascone_license_file/software_release_limitation/software_release");
+    if (!softwareRelease.empty())
+    {
+        releaseLimitation->setSoftwareRelease(softwareRelease);
+    }
+
+    string swDescription = get_first_text(BAD_CAST "/slascone_license_file/software_release_limitation/description");
+    if (!swDescription.empty())
+    {
+        releaseLimitation->setDescription(swDescription);
+    }
+
     return 0;
 }
