@@ -8,12 +8,29 @@ using namespace org::openapitools::client::model;
 
 namespace SLASCONE_demo_cpp
 {
+    class XmlDocument
+    {
+    public:
+        XmlDocument(const char* xml_file);
+        ~XmlDocument();
+
+        string get_first_text(const xmlChar* xpathExpr) const;
+        bool node_exists(const xmlChar* xpathExpr) const;
+        xmlXPathContextPtr get_xpath_context() const;
+
+    private:
+        xmlDocPtr doc;
+        xmlXPathContextPtr xpathCtx; 
+    };
+
     class LicenseXmlHelper
     {
     public:
-        static int print_license_infos(const char* xml_file);
+        static int print_license_infos(const XmlDocument* xml_license);
+        static bool check_license_validity(const XmlDocument* xml_license);
+        static bool check_software_release_limitation_validity(const XmlDocument* xml_license);
 
-        protected:
+    protected:
         static int eval_xpath_expression(const xmlChar *xpathExpr, xmlXPathContextPtr xpathCtx, void (*print_func)(xmlNodeSetPtr));
 
         static void print_xpath_nodes(xmlNodeSetPtr nodes);
@@ -28,6 +45,6 @@ namespace SLASCONE_demo_cpp
         static int fromXml(shared_ptr<ProvisioningLimitationDto> &limitation, xmlNodePtr rootNode);
         static int fromXml(shared_ptr<ProvisioningConstrainedVariableDto> &variable, xmlNodePtr rootNode);
         static int fromXml(shared_ptr<ProvisioningVariableDto> &variable, xmlNodePtr rootNode);
-        static int fromXml(shared_ptr<SoftwareReleaseLimitationDto> &variable, const char* xml_file);
+        static int fromXml(shared_ptr<SoftwareReleaseLimitationDto> &variable, const XmlDocument* xml_license);
     };
 }

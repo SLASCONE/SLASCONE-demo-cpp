@@ -259,7 +259,6 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
             return -1;
         }
     }
-    */
 
     if (!licenseDto->isIsActive())
     {
@@ -297,6 +296,7 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseDto> licenseDto)
     {
         return -1;
     }
+    */
 
     return 0;
 }
@@ -543,7 +543,6 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseInfoDto> licenseInfoDt
             return -1;
         } 
     }
-    */
 
     if (!licenseInfoDto->isIsLicenseActive())
     {
@@ -582,6 +581,7 @@ int LicensePrettyPrinter::print_license(shared_ptr<LicenseInfoDto> licenseInfoDt
     {
         return -1;
     }
+    */
 
     return 0;
 }

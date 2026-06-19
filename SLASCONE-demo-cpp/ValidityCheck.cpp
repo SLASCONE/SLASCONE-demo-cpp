@@ -6,11 +6,15 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <cpprest/asyncrt_utils.h>
 #include "ValidityCheck.h"
+#include "ReleaseCheck.h"
 
 using namespace std;
 using namespace org::openapitools::client::model;
+using namespace utility;
 using namespace utility::conversions;
 using namespace SLASCONE_demo_cpp;
+
+const string softwareRelease = "26.1";
 
 std::tm datetime_to_tm(const utility::datetime& dt)
 {
@@ -243,22 +247,37 @@ bool ValidityCheck::check_license_validity(shared_ptr<SoftwareReleaseLimitationD
 {
     if (releaseLimitationDto == nullptr)
     {
-        cout << "Error: No software release limitation information available." << endl;
-        return false;
+        // No software release limitation, consider it as valid
+        return true;
     }
 
     if (releaseLimitationDto != nullptr)
     {
-
-        if (!swLimitation->getSoftwareRelease().empty())
+        auto limit = releaseLimitationDto->getSoftwareRelease();
+        if (limit.empty())
         {
-            cout << "Software Release: " << swLimitation->getSoftwareRelease() << endl;
+            cout << "No software release limitation." << endl;
+            return true;
         }
 
-        if (swLimitation->descriptionIsSet() && !swLimitation->getDescription().empty())
+        cout << endl << "Software Version Information:" << endl;
+        cout << "----------------------------" << endl;
+        cout << "Software Release Limit: " << releaseLimitationDto->getSoftwareRelease() << endl;
+
+        if (releaseLimitationDto->descriptionIsSet() && !releaseLimitationDto->getDescription().empty())
         {
-            cout << "Description: " << swLimitation->getDescription() << endl;
+            cout << "Description: " << releaseLimitationDto->getDescription() << endl;
         }
+
+        if (ReleaseCheck::Compare(limit, softwareRelease) < 0)
+        {
+            cout << "\n===> Software version is not compliant <===\n" << endl;
+            return false;
+        }
+         else
+         {
+             cout << "Software version is compliant." << endl;
+         }
     }
 
     return true;
