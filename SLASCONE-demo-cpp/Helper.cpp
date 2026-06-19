@@ -51,7 +51,7 @@ AHGtgLYGjbKcW4xYmpDGl0txfcipAr1zMj7X3oCO9lHcFRnXdzx+TTeJYxQX2XVb
 hQIDAQAB
 -----END PUBLIC KEY-----)";
 
-const string softwareRelease = "26.1";
+const string softwareRelease = "26.3";
 
 /**
  * Helper:
@@ -117,7 +117,7 @@ int Helper::activate_license()
     activateLicense->setLicenseKey(licenseKey);
     activateLicense->setClientId(get_device_id());
     activateLicense->setClientName("SLASCONE C++ sample");
-    activateLicense->setSoftwareVersion("24.11");
+    activateLicense->setSoftwareVersion(softwareRelease);
 
     // Call the API with retry logic
     auto result = ErrorHandlingHelper::execute<shared_ptr<LicenseInfoDto>>(
@@ -181,7 +181,7 @@ int Helper::send_license_heartbeat()
 	shared_ptr<AddHeartbeatDto> addHeartbeat = make_shared<AddHeartbeatDto>();
     addHeartbeat->setProductId(productId);
     addHeartbeat->setClientId(get_device_id());
-	addHeartbeat->setSoftwareVersion("24.11");
+	addHeartbeat->setSoftwareVersion(softwareRelease);
 	addHeartbeat->setOperatingSystem(get_os_name());
 
     // Call the API with retry logic
@@ -354,6 +354,7 @@ int Helper::lookup_license_info()
         for (const auto& license : licenses)
         {
             LicensePrettyPrinter::print_license(license);
+            ValidityCheck::check_license_validity(license);
         }
     }
 

@@ -14,7 +14,7 @@ using namespace utility;
 using namespace utility::conversions;
 using namespace SLASCONE_demo_cpp;
 
-const string softwareRelease = "26.1";
+const string softwareRelease = "26.3";
 
 std::tm datetime_to_tm(const utility::datetime& dt)
 {
@@ -52,9 +52,7 @@ bool ValidityCheck::check_license_validity(shared_ptr<LicenseDto> licenseDto)
             }
             else
             {
-                long valid = licenseDto->getExpirationDateUtc() - utility::datetime::utc_now(); // in seconds
-                valid /= 86400; // convert to days
-                cout << "License is valid for another " << valid << " day(s) until " << licenseDto->getExpirationDateUtc().to_string(utility::datetime::ISO_8601) << "." << endl;
+                cout << "License is valid until " << licenseDto->getExpirationDateUtc().to_string(utility::datetime::ISO_8601) << "." << endl;
             }
         }
     }
@@ -105,36 +103,37 @@ bool ValidityCheck::check_license_validity(shared_ptr<LicenseDto> licenseDto)
 
     // Software version information
     auto swLimitation = licenseDto->getSoftwareReleaseLimitation();
-    if (swLimitation != nullptr)
+    if (swLimitation == nullptr)
     {
-        cout << endl << "Software Version Information:" << endl;
-        cout << "----------------------------" << endl;
-        if (licenseDto->isIsSoftwareReleaseValid())
-        {
-            cout << "Software version is valid" << endl;
-        }
-        else
-        {
-            cout << "\n===> Software version is not valid <===\n" << endl;
-        }
-
-        if (!swLimitation->getSoftwareRelease().empty())
-        {
-            cout << "Software Release: " << swLimitation->getSoftwareRelease() << endl;
-        }
-
-        if (swLimitation->descriptionIsSet() && !swLimitation->getDescription().empty())
-        {
-            cout << "Description: " << swLimitation->getDescription() << endl;
-        }
+        return 0;
     }
 
-    if (!licenseDto->isIsSoftwareReleaseValid())
+    auto limit = swLimitation->getSoftwareRelease();
+    if (limit.empty())
     {
-        return -1;
+        return true;
     }
 
-    return 0;
+    cout << endl << "Software Version Information:" << endl;
+    cout << "----------------------------" << endl;
+    cout << "Software Release Limit: " << swLimitation->getSoftwareRelease() << endl;
+
+    if (swLimitation->descriptionIsSet() && !swLimitation->getDescription().empty())
+    {
+        cout << "Description: " << swLimitation->getDescription() << endl;
+    }
+
+    if (ReleaseCheck::Compare(limit, softwareRelease) < 0)
+    {
+        cout << "\n===> Software version " << softwareRelease << " is not compliant <===\n" << endl;
+        return false;
+    }
+    else
+    {
+        cout << "Software version is compliant." << endl;
+    }
+
+    return true;
 }
 
 bool ValidityCheck::check_license_validity(shared_ptr<LicenseInfoDto> licenseInfoDto)
@@ -161,9 +160,7 @@ bool ValidityCheck::check_license_validity(shared_ptr<LicenseInfoDto> licenseInf
         }
         else
         {
-            long valid = licenseInfoDto->getExpirationDateUtc() - utility::datetime::utc_now(); // in seconds
-            valid /= 86400; // convert to days
-            cout << "License is valid for another " << valid << " day(s) until " << licenseInfoDto->getExpirationDateUtc().to_string(utility::datetime::ISO_8601) << "." << endl;
+            cout << "License is valid until " << licenseInfoDto->getExpirationDateUtc().to_string(utility::datetime::ISO_8601) << "." << endl;
         }
     }
     else
@@ -251,33 +248,34 @@ bool ValidityCheck::check_license_validity(shared_ptr<SoftwareReleaseLimitationD
         return true;
     }
 
-    if (releaseLimitationDto != nullptr)
+    if (releaseLimitationDto == nullptr)
     {
-        auto limit = releaseLimitationDto->getSoftwareRelease();
-        if (limit.empty())
-        {
-            cout << "No software release limitation." << endl;
-            return true;
-        }
+        return true;
+    }
 
-        cout << endl << "Software Version Information:" << endl;
-        cout << "----------------------------" << endl;
-        cout << "Software Release Limit: " << releaseLimitationDto->getSoftwareRelease() << endl;
+    auto limit = releaseLimitationDto->getSoftwareRelease();
+    if (limit.empty())
+    {
+        return true;
+    }
 
-        if (releaseLimitationDto->descriptionIsSet() && !releaseLimitationDto->getDescription().empty())
-        {
-            cout << "Description: " << releaseLimitationDto->getDescription() << endl;
-        }
+    cout << endl << "Software Version Information:" << endl;
+    cout << "----------------------------" << endl;
+    cout << "Software Release Limit: " << releaseLimitationDto->getSoftwareRelease() << endl;
 
-        if (ReleaseCheck::Compare(limit, softwareRelease) < 0)
-        {
-            cout << "\n===> Software version is not compliant <===\n" << endl;
-            return false;
-        }
-         else
-         {
-             cout << "Software version is compliant." << endl;
-         }
+    if (releaseLimitationDto->descriptionIsSet() && !releaseLimitationDto->getDescription().empty())
+    {
+        cout << "Description: " << releaseLimitationDto->getDescription() << endl;
+    }
+
+    if (ReleaseCheck::Compare(limit, softwareRelease) < 0)
+    {
+        cout << "\n===> Software version " << softwareRelease << " is not compliant <===\n" << endl;
+        return false;
+    }
+    else
+    {
+        cout << "Software version is compliant." << endl;
     }
 
     return true;
