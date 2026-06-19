@@ -572,9 +572,9 @@ These variables are defined in the `CMakeSettings.json` file. Please locate this
 
 ## Further Reading
 
-* [API Test Center](https://api.slascone.com/swagger)
 * [What and How to Save in Your Client](https://support.slascone.com/hc/en-us/articles/7702036319261)
 * [Digital Signature and Data Integrity](https://support.slascone.com/hc/en-us/articles/360016063637)
+* [License validation fields](https://support.slascone.com/hc/en-us/articles/27831389148957-LICENSE-VALIDATION-FIELDS)
 * [Error Handling](https://support.slascone.com/hc/en-us/articles/360016160398)
 * [Product Analytics](https://support.slascone.com/hc/en-us/articles/360016055537)
 * [Consumption-Based Limitations](https://support.slascone.com/hc/en-us/articles/360016057197)

@@ -5,6 +5,8 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include "LicensePrettyPrinter.h"
+#include "ValidityCheck.h"
 #include "LicenseXmlValidator/LicenseXmlValidator.h"
 #include <SlasconeOpenApiClient/model/ConsumptionResetPeriod.h>
 
@@ -38,7 +40,7 @@ const string provisioningKey = "NfEpJ2DFfgczdYqOjvmlgP2O/4VlqmRHXNE9xDXbqZcOwXTb
 const string licenseKey = "27180460-29df-4a5a-a0a1-78c85ab6cee0"; // Just for demo, do not change this
 
 // CHANGE these values according to your environment at: https://my.slascone.com/administration/signature
-const string pemKey =
+const string pemKey = 
 R"(-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwpigzm+cZIyw6x253YRD
 mroGQyo0rO9qpOdbNAkE/FMSX+At5CQT/Cyr0eZTo2h+MO5gn5a6dwg2SYB/K1Yt
@@ -48,6 +50,8 @@ y7drmZz81dlWoRcLrBRpkf6XrOTX4yFxe/3HJ8mpukuvdweUBFoQ0xOHmG9pNQ31
 AHGtgLYGjbKcW4xYmpDGl0txfcipAr1zMj7X3oCO9lHcFRnXdzx+TTeJYxQX2XVb
 hQIDAQAB
 -----END PUBLIC KEY-----)";
+
+const string softwareRelease = "26.3";
 
 /**
  * Helper:
@@ -113,7 +117,7 @@ int Helper::activate_license()
     activateLicense->setLicenseKey(licenseKey);
     activateLicense->setClientId(get_device_id());
     activateLicense->setClientName("SLASCONE C++ sample");
-    activateLicense->setSoftwareVersion("24.11");
+    activateLicense->setSoftwareVersion(softwareRelease);
 
     // Call the API with retry logic
     auto result = ErrorHandlingHelper::execute<shared_ptr<LicenseInfoDto>>(
@@ -149,7 +153,8 @@ int Helper::activate_license()
     if (licenseInfoDto != nullptr)
     {
         // Successful activation
-        print_license(licenseInfoDto);
+        LicensePrettyPrinter::print_license(licenseInfoDto);
+        ValidityCheck::check_license_validity(licenseInfoDto);
     }
     else
     {
@@ -176,7 +181,7 @@ int Helper::send_license_heartbeat()
 	shared_ptr<AddHeartbeatDto> addHeartbeat = make_shared<AddHeartbeatDto>();
     addHeartbeat->setProductId(productId);
     addHeartbeat->setClientId(get_device_id());
-	addHeartbeat->setSoftwareVersion("24.11");
+	addHeartbeat->setSoftwareVersion(softwareRelease);
 	addHeartbeat->setOperatingSystem(get_os_name());
 
     // Call the API with retry logic
@@ -228,7 +233,8 @@ int Helper::send_license_heartbeat()
     if (licenseInfoDto != nullptr)
 	{
         // Successful heartbeat
-		print_license(licenseInfoDto);
+        LicensePrettyPrinter::print_license(licenseInfoDto);
+        ValidityCheck::check_license_validity(licenseInfoDto);
 	}
 	else
 	{
@@ -250,7 +256,8 @@ int Helper::find_temp_offline_license()
 
     if (0 == apiClient->TryGetLicenseInfo(licenseInfoDto))
     {
-        print_license(licenseInfoDto);
+        LicensePrettyPrinter::print_license(licenseInfoDto);
+        ValidityCheck::check_license_validity(licenseInfoDto);
         this->licenseInfoDto = licenseInfoDto;
     }
     else
@@ -314,6 +321,42 @@ int Helper::unassign_token()
 
     // Reset memorized license info and temporary offline license
     licenseInfoDto = nullptr;
+
+    return 0;
+}
+
+int Helper::lookup_license_info()
+{
+    // Build the request body
+    shared_ptr<GetLicensesByLicenseKeyDto> getLicensesByCustomerDto = make_shared<GetLicensesByLicenseKeyDto>();
+    getLicensesByCustomerDto->setLicenseKey(licenseKey);
+    getLicensesByCustomerDto->setProductId(productId);
+
+    // Call the API with retry logic
+    auto result = ErrorHandlingHelper::execute<std::vector<std::shared_ptr<LicenseDto>>>(
+        [&]() { return provisioningApi->getLicensesByLicenseKeyAsync(isvId, getLicensesByCustomerDto); },
+        "getLicensesByLicenseKey");
+
+    if (result.errorType != ErrorType::None)
+    {
+        print_api_error(result.errorMessage, result.errorId);
+        return -1;
+    }
+
+    auto licenses = result.data;
+    if (licenses.empty())
+    {
+        cout << "No licenses found for the given license key." << endl;
+    }
+    else
+    {
+        cout << licenses.size() << " license(s) found for the given license key:" << endl;
+        for (const auto& license : licenses)
+        {
+            LicensePrettyPrinter::print_license(license);
+            ValidityCheck::check_license_validity(license);
+        }
+    }
 
     return 0;
 }
@@ -737,7 +780,8 @@ int Helper::get_license_by_id()
 
     for (auto licenseDto : result.data)
     {
-        print_license(licenseDto);
+        LicensePrettyPrinter::print_license(licenseDto);
+        ValidityCheck::check_license_validity(licenseDto);
     }
 
     return 0;
@@ -850,138 +894,4 @@ void Helper::print_api_error(const string& errorMessage, int32_t errorId)
     {
         cout << "You have to activate a license first before you can send a license heartbeat." << endl;
     }
-}
-
-int Helper::print_license(shared_ptr<LicenseDto> licenseDto)
-{
-    if (licenseDto != nullptr)
-    {
-        cout << "License key: " << to_utf8string(licenseDto->getId()) << endl;
-        cout << "Legacy license key: " << to_utf8string(licenseDto->getLegacyLicenseKey()) << endl;
-        cout << "License name: " << to_utf8string(licenseDto->getName()) << endl;
-        cout << "Product name: " << to_utf8string(licenseDto->getProductId()) << endl;
-        cout << "License valid: " << licenseDto->isIsValid() << endl;
-        cout << "Expiration date: " << to_utf8string(licenseDto->getExpirationDateUtc().to_string()) << endl;
-        cout << "Customer company name: " << to_utf8string(licenseDto->getCustomer()->getCompanyName()) << endl;
-        cout << "Customer number: " << to_utf8string(licenseDto->getCustomer()->getCustomerNumber()) << endl;
-
-        auto features = licenseDto->getLicenseFeatures();
-        for (auto feature : features)
-        {
-            cout << " - Feature name: " << to_utf8string(feature->getFeatureName()) << endl;
-            cout << "   Feature description: " << to_utf8string(feature->getFeatureDescription()) << endl;
-        }
-
-        auto limitations = licenseDto->getLicenseLimitations();
-        for (auto limitation : limitations)
-        {
-            cout << " - Limitation name: " << to_utf8string(limitation->getLimitationName()) << endl;
-            cout << "   Limitation description: " << to_utf8string(limitation->getLimitationDescription()) << endl;
-            cout << "   Limitation value: " << limitation->getLimit() << endl;
-        }
-
-        auto constrainedVariables = licenseDto->getLicenseConstrainedVariables();
-        for (auto constrainedVariable : constrainedVariables)
-        {
-            cout << " - Constrained variable name: " << to_utf8string(constrainedVariable->getVariableName()) << endl;
-            cout << "   Constrained variable description: " << to_utf8string(constrainedVariable->getVariableDescription()) << endl;
-            cout << "   Constrained variable value: ";            
-            for (auto value : constrainedVariable->getValues())
-            {
-                cout << to_utf8string(value);
-            }
-            cout << endl;
-        }
-
-        auto variables = licenseDto->getLicenseVariables();
-        for (auto variable : variables)
-        {
-            cout << " - Variable name: " << to_utf8string(variable->getVariableName()) << endl;
-            cout << "   Variable description: " << to_utf8string(variable->getVariableDescription()) << endl;
-            cout << "   Variable value: " << to_utf8string(variable->getValue()) << endl;
-        }
-        return 0;
-    }
-
-    return -1;
-}
-
-int Helper::print_license(shared_ptr<LicenseInfoDto> licenseInfoDto)
-{
-    if (licenseInfoDto != nullptr)
-    {
-        cout << "License key: " << to_utf8string(licenseInfoDto->getLicenseKey()) << endl;
-        licenseInfoDto->legacyLicenseKeyIsSet() ? cout << "Legacy license key: " << to_utf8string(licenseInfoDto->getLegacyLicenseKey()) << endl : cout << "Legacy license key: not set" << endl;
-        cout << "Token key: " << to_utf8string(licenseInfoDto->getTokenKey()) << endl;
-        licenseInfoDto->licenseNameIsSet() ? cout << "License name: " << to_utf8string(licenseInfoDto->getLicenseName()) << endl : cout << "License name: not set" << endl;
-        cout << "Product name: " << to_utf8string(licenseInfoDto->getProductName()) << endl;
-        cout << "Template name: " << to_utf8string(licenseInfoDto->getTemplateName()) << endl;
-        cout << "License valid: " << licenseInfoDto->isIsLicenseValid() << endl;
-        cout << "Expiration date: " << to_utf8string(licenseInfoDto->getExpirationDateUtc().to_string()) << endl;
-
-        auto customer = licenseInfoDto->getCustomer();
-        cout << "Customer company name: " << to_utf8string(customer->getCompanyName()) << endl;
-        cout << "Customer number: " << to_utf8string(customer->getCustomerNumber()) << endl;
-
-        cout << "Session period: " << licenseInfoDto->getSessionPeriod() << endl;
-        cout << "Heartbeat period: " << licenseInfoDto->getHeartbeatPeriod() << endl;
-        cout << "Freeride: " << licenseInfoDto->getFreeride() << endl;
-
-        auto features = licenseInfoDto->getFeatures();
-        for (auto feature : features)
-        {
-            cout << " - Feature name: " << to_utf8string(feature->getName());
-            feature->isIsActive() ? cout << endl : cout << " (not active)" << endl;
-            feature->descriptionIsSet() 
-                ? cout << "   Feature description: " << to_utf8string(feature->getDescription()) << endl
-                : cout << "   Feature description: not set" << endl;
-        }
-
-        auto limitations = licenseInfoDto->getLimitations();
-        for (auto limitation : limitations)
-        {
-            cout << " - Limitation name: " << to_utf8string(limitation->getName()) << endl;
-            limitation->descriptionIsSet() 
-                ? cout << "   Limitation description: " << to_utf8string(limitation->getDescription()) << endl 
-                : cout << "   Limitation description: not set" << endl;
-            limitation->valueIsSet() 
-                ? cout << "   Limitation value: " << limitation->getValue() << endl
-                : cout << "   Unlimited limitation" << endl;
-            limitation->remainingIsSet() 
-                ? cout << "   Limitation remaining: " << limitation->getRemaining() << endl
-                : cout << "   Limitation remaining: not set" << endl;
-            limitation->balanceIsSet() 
-                ? cout << "   Limitation balance: " << limitation->getBalance() << endl
-                : cout << "   Limitation balance: not set" << endl;
-        }
-
-        auto constrainedVariables = licenseInfoDto->getConstrainedVariables();
-        for (auto constrainedVariable : constrainedVariables)
-        {
-            cout << " - Constrained variable name: " << to_utf8string(constrainedVariable->getName()) << endl;
-            constrainedVariable->descriptionIsSet() 
-                ? cout << "   Constrained variable description: " << to_utf8string(constrainedVariable->getDescription()) << endl 
-                : cout << "   Constrained variable description: not set" << endl;
-            cout << "   Constrained variable value: ";            
-            for (auto value : constrainedVariable->getValue())
-            {
-                cout << to_utf8string(value);
-            }
-            cout << endl;
-        }
-
-        auto variables = licenseInfoDto->getVariables();
-        for (auto variable : variables)
-        {
-            cout << " - Variable name: " << to_utf8string(variable->getName()) << endl;
-            variable->descriptionIsSet() 
-                 ? cout << "   Variable description: " << to_utf8string(variable->getDescription()) << endl
-                 : cout << "   Variable description: not set" << endl;
-            cout << "   Variable value: " << to_utf8string(variable->getValue()) << endl;
-        }
-
-        return 0;
-    }
-
-    return -1;
 }

@@ -21,7 +21,7 @@ int main(int argc, const char *argv[])
 
     while (true)
     {
-        cout << endl;
+        cout << endl << "-------------------------------------------------------------------------------------------------------------" << endl;
         cout << "-- MAIN" << endl;
         cout << "    1: Activate license (can be done only once per device)" << endl;
         cout << "    2: Add license heartbeat" << endl;
@@ -38,6 +38,8 @@ int main(int argc, const char *argv[])
         cout << "-- OFFLINE LICENSE" << endl;
         cout << "    11: Validate license file (signature check)" << endl;
         cout << "    12: Read license file" << endl;
+        cout << "-- MISC" << endl;
+        cout << "    13: Lookup license information" << endl;
         cout << "x: Exit" << endl << "> ";
         cin >> input;
 
@@ -111,9 +113,11 @@ int main(int argc, const char *argv[])
             // Validate license file
             cout << "-- Validating license file..." << endl;
             helper.verify_file("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e.xml");
+
             // Validate manipulated license file
             cout << "-- Validating manipulated license file..." << endl;
             helper.verify_file("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e_scam.xml");
+
             // Validate activation file
             cout << "-- Validating activation file..." << endl;
             helper.verify_file("/workspaces/SLASCONE-demo-cpp/Assets/ActivationFile.xml");
@@ -122,7 +126,18 @@ int main(int argc, const char *argv[])
         {
             // Read license file
             cout << "Reading license file..." << endl;
-			LicenseXmlHelper::print_license_infos("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e.xml");
+            XmlDocument xml_license("/workspaces/SLASCONE-demo-cpp/Assets/License-91fad880-90c4-46cb-8d8b-0a12445c6f0e.xml");
+			LicenseXmlHelper::print_license_infos(&xml_license);
+            if (LicenseXmlHelper::check_license_validity(&xml_license))
+            {
+                LicenseXmlHelper::check_software_release_limitation_validity(&xml_license);
+            }
+        }
+        else if (input == "13")
+        {
+            // Lookup license information
+            cout << "Looking up license information..." << endl;
+            helper.lookup_license_info();            
         }
     }
     return 0;

@@ -40,6 +40,7 @@ namespace SLASCONE_demo_cpp
         int send_license_heartbeat();
         int find_temp_offline_license();
         int unassign_token();
+        int lookup_license_info();
         int send_analytical_heartbeat();
         int send_usage_heartbeat();
         int send_consumption_heartbeat();
@@ -55,7 +56,5 @@ namespace SLASCONE_demo_cpp
     protected:
         void response_handler(web::http::status_code, const web::http::http_headers&);
         void print_api_error(const std::string& errorMessage, int32_t errorId);
-        int print_license(shared_ptr<LicenseDto> licenseDto);
-        int print_license(shared_ptr<LicenseInfoDto> licenseInfoDto);
     };
 }
