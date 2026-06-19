@@ -8,6 +8,22 @@
 using namespace utility::conversions;
 using namespace SLASCONE_demo_cpp;
 
+namespace
+{
+    std::string get_node_text(xmlNodePtr node)
+    {
+        xmlChar* content = xmlNodeGetContent(node);
+        if (content == nullptr)
+        {
+            return "";
+        }
+
+        std::string text(reinterpret_cast<const char*>(content));
+        xmlFree(content);
+        return text;
+    }
+}
+
 int LicenseXmlHelper::print_license_infos(const XmlDocument* xml_license)
 {
         // Display the main properties of the license
@@ -479,19 +495,19 @@ int LicenseXmlHelper::fromXml(shared_ptr<ProvisioningFeatureDto> &feature, xmlNo
         {
             if (xmlStrcmp(curNode->name, BAD_CAST "id") == 0)
             {
-                feature->setId(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                feature->setId(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "name") == 0)
             {
-                feature->setName(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                feature->setName(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "description") == 0)
             {
-                feature->setDescription(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                feature->setDescription(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "is_active") == 0)
             {
-                std::string isActiveStr(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                std::string isActiveStr = get_node_text(curNode);
                 feature->setIsActive(isActiveStr == "true");
             }
         }
@@ -507,34 +523,36 @@ int LicenseXmlHelper::fromXml(shared_ptr<ProvisioningLimitationDto> &limitation,
         {
             if (xmlStrcmp(curNode->name, BAD_CAST "id") == 0)
             {
-                limitation->setId(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                limitation->setId(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "name") == 0)
             {
-                limitation->setName(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                limitation->setName(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "description") == 0)
             {
-                limitation->setDescription(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                limitation->setDescription(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "value") == 0)
             {
-                auto valueStr = reinterpret_cast<const char *>(xmlNodeGetContent(curNode));
-                if (valueStr != nullptr && strlen(valueStr) > 0)
+                auto valueStr = get_node_text(curNode);
+                if (!valueStr.empty())
                 {
-                    limitation->setValue(strtol(valueStr, nullptr, 10));
+                    limitation->setValue(strtol(valueStr.c_str(), nullptr, 10));
                 }
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "consumption_reset_mode") == 0)
             {
-                auto resetPeriod = strtol(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)), nullptr, 10);
+                auto resetModeStr = get_node_text(curNode);
+                auto resetPeriod = strtol(resetModeStr.c_str(), nullptr, 10);
                 auto resetMode = make_shared<ConsumptionResetPeriod>();
                 resetMode->setValue(static_cast<ConsumptionResetPeriod::eConsumptionResetPeriod>(resetPeriod));
                 limitation->setConsumptionResetMode(resetMode);
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "consumption_reset_period_days") == 0)
             {
-                limitation->setConsumptionResetPeriodDays(strtol(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)), nullptr, 10));
+                auto periodDaysStr = get_node_text(curNode);
+                limitation->setConsumptionResetPeriodDays(strtol(periodDaysStr.c_str(), nullptr, 10));
             }
         }
     }
@@ -551,23 +569,23 @@ int LicenseXmlHelper::fromXml(shared_ptr<ProvisioningConstrainedVariableDto> &va
         {
             if (xmlStrcmp(curNode->name, BAD_CAST "id") == 0)
             {
-                variable->setId(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                variable->setId(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "name") == 0)
             {
-                variable->setName(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                variable->setName(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "description") == 0)
             {
-                variable->setDescription(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                variable->setDescription(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "custom_list_id") == 0)
             {
-                variable->setCustomListId(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                variable->setCustomListId(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "values") == 0)
             {
-                values->push_back(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                values->push_back(get_node_text(curNode));
             }
         }
     }
@@ -585,19 +603,19 @@ int LicenseXmlHelper::fromXml(shared_ptr<ProvisioningVariableDto> &variable, xml
         {
             if (xmlStrcmp(curNode->name, BAD_CAST "id") == 0)
             {
-                variable->setId(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                variable->setId(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "name") == 0)
             {
-                variable->setName(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                variable->setName(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "description") == 0)
             {
-                variable->setDescription(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                variable->setDescription(get_node_text(curNode));
             }
             else if (xmlStrcmp(curNode->name, BAD_CAST "value") == 0)
             {
-                variable->setValue(reinterpret_cast<const char *>(xmlNodeGetContent(curNode)));
+                variable->setValue(get_node_text(curNode));
             }
         }
     }

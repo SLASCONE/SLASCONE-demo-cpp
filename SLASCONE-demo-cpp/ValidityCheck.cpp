@@ -40,7 +40,10 @@ bool ValidityCheck::check_license_validity(shared_ptr<LicenseDto> licenseDto)
     cout << endl << "===> License is " << (licenseDto->isIsValid() ? "valid" : "not valid") << " <===" << endl << endl;
 
     // Date information and license validity
-    if (licenseDto->isIsValid() && licenseDto->dateValidityIsSet() && DateValidity::eDateValidity::_0 == licenseDto->getDateValidity()->getValue())
+    auto dateValidityPtr = licenseDto->dateValidityIsSet() ? licenseDto->getDateValidity() : nullptr;
+    if (licenseDto->isIsValid()
+        && dateValidityPtr != nullptr
+        && DateValidity::eDateValidity::_0 == dateValidityPtr->getValue())
     {
         if (licenseDto->expirationDateUtcIsSet())
         {
@@ -56,9 +59,9 @@ bool ValidityCheck::check_license_validity(shared_ptr<LicenseDto> licenseDto)
             }
         }
     }
-    else if (licenseDto->dateValidityIsSet())
+    else if (dateValidityPtr != nullptr)
     {
-        switch (licenseDto->getDateValidity()->getValue())
+        switch (dateValidityPtr->getValue())
         {
             case DateValidity::eDateValidity::_1:
                 cout << "License is not valid yet." << (licenseDto->startDateUtcIsSet() ? " (Start Date: " + licenseDto->getStartDateUtc().to_string(datetime::ISO_8601) + ")" : "") << endl;
@@ -78,34 +81,33 @@ bool ValidityCheck::check_license_validity(shared_ptr<LicenseDto> licenseDto)
         cout << "License is deactivated." << endl;
     }
 
-    if (licenseDto->dateValidityIsSet())
+    if (dateValidityPtr != nullptr)
     {
-        auto dateValidityPtr = licenseDto->getDateValidity();
         auto dateValidity = dateValidityPtr->getValue();
 
         if (DateValidity::eDateValidity::_1 == dateValidity)
         {
             cout << "This license is not yet valid. Valid from " << licenseDto->getStartDateUtc().to_string(datetime::ISO_8601) << endl;
-            return -1;
+            return false;
         }
         else if (DateValidity::eDateValidity::_2 == dateValidity)
         {
             cout << "This license is expired. Expired at " << licenseDto->getExpirationDateUtc().to_string(datetime::ISO_8601) << endl;
-            return -1;
+            return false;
         }
     }
 
     if (!licenseDto->isIsActive())
     {
         cout << "This license is deactivated." << endl;
-        return -1;
+        return false;
     }
 
     // Software version information
     auto swLimitation = licenseDto->getSoftwareReleaseLimitation();
     if (swLimitation == nullptr)
     {
-        return 0;
+        return true;
     }
 
     auto limit = swLimitation->getSoftwareRelease();
@@ -150,7 +152,10 @@ bool ValidityCheck::check_license_validity(shared_ptr<LicenseInfoDto> licenseInf
     cout << endl << "===> License is " << (licenseInfoDto->isIsLicenseValid() ? "valid" : "not valid") << " <===" << endl << endl;
 
     // Date information and license validity
-    if (licenseInfoDto->isIsLicenseValid() && DateValidity::eDateValidity::_0 == licenseInfoDto->getDateValidity()->getValue())
+    auto dateValidityPtr = licenseInfoDto->dateValidityIsSet() ? licenseInfoDto->getDateValidity() : nullptr;
+    if (licenseInfoDto->isIsLicenseValid()
+        && dateValidityPtr != nullptr
+        && DateValidity::eDateValidity::_0 == dateValidityPtr->getValue())
     {
         // Check if it's a "9999" perpetual license
         std::tm expirationTm = datetime_to_tm(licenseInfoDto->getExpirationDateUtc());
@@ -163,9 +168,9 @@ bool ValidityCheck::check_license_validity(shared_ptr<LicenseInfoDto> licenseInf
             cout << "License is valid until " << licenseInfoDto->getExpirationDateUtc().to_string(utility::datetime::ISO_8601) << "." << endl;
         }
     }
-    else
+    else if (dateValidityPtr != nullptr)
     {
-        switch (licenseInfoDto->getDateValidity()->getValue())
+        switch (dateValidityPtr->getValue())
         {
             case DateValidity::eDateValidity::_1:
                 cout << "License is not valid yet." << (licenseInfoDto->startDateUtcIsSet() ? " (Start Date: " + licenseInfoDto->getStartDateUtc().to_string(datetime::ISO_8601) + ")" : "") << endl;
@@ -182,27 +187,26 @@ bool ValidityCheck::check_license_validity(shared_ptr<LicenseInfoDto> licenseInf
         cout << "License is deactivated." << endl;
     }
 
-    if (licenseInfoDto->dateValidityIsSet())
+    if (dateValidityPtr != nullptr)
     {
-        auto dateValidityPtr = licenseInfoDto->getDateValidity();
         auto dateValidity = dateValidityPtr->getValue();
 
         if (DateValidity::eDateValidity::_1 == dateValidity)
         {
             cout << "This license is not yet valid. Valid from " << licenseInfoDto->getStartDateUtc().to_string(datetime::ISO_8601) << endl;
-            return -1;
+            return false;
         }
         else if (DateValidity::eDateValidity::_2 == dateValidity)
         {
             cout << "This license is expired. Expired at " << licenseInfoDto->getExpirationDateUtc().to_string(datetime::ISO_8601) << endl;
-            return -1;
+            return false;
         } 
     }
 
     if (!licenseInfoDto->isIsLicenseActive())
     {
         cout << "This license is deactivated." << endl;
-        return -1;
+        return false;
     }
 
     // Software version information
@@ -234,10 +238,10 @@ bool ValidityCheck::check_license_validity(shared_ptr<LicenseInfoDto> licenseInf
     
     if (!licenseInfoDto->isIsSoftwareVersionValid())
     {
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 bool ValidityCheck::check_license_validity(shared_ptr<SoftwareReleaseLimitationDto> releaseLimitationDto)
