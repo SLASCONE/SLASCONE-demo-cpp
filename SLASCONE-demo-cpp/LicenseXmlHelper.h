@@ -28,6 +28,7 @@ namespace SLASCONE_demo_cpp
     public:
         static int print_license_infos(const XmlDocument* xml_license);
         static bool check_license_validity(const XmlDocument* xml_license);
+        static bool check_license_activation(const XmlDocument* xml_license, const XmlDocument* xml_activation);
         static bool check_software_release_limitation_validity(const XmlDocument* xml_license);
 
     protected:

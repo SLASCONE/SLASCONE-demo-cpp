@@ -130,6 +130,8 @@ int main(int argc, const char *argv[])
 			LicenseXmlHelper::print_license_infos(&xml_license);
             if (LicenseXmlHelper::check_license_validity(&xml_license))
             {
+                XmlDocument xml_activation("/workspaces/SLASCONE-demo-cpp/Assets/ActivationFile.xml");
+                LicenseXmlHelper::check_license_activation(&xml_license, &xml_activation);
                 LicenseXmlHelper::check_software_release_limitation_validity(&xml_license);
             }
         }
