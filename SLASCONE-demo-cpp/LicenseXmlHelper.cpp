@@ -1,5 +1,7 @@
 #include "LicenseXmlHelper.h"
 #include "ValidityCheck.h"
+#include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -10,6 +12,15 @@ using namespace SLASCONE_demo_cpp;
 
 namespace
 {
+    bool equals_ignore_case(const std::string& lhs, const std::string& rhs)
+    {
+        return lhs.size() == rhs.size() &&
+            std::equal(lhs.begin(), lhs.end(), rhs.begin(), [](unsigned char left, unsigned char right)
+            {
+                return std::tolower(left) == std::tolower(right);
+            });
+    }
+
     std::string get_node_text(xmlNodePtr node)
     {
         xmlChar* content = xmlNodeGetContent(node);
@@ -42,6 +53,12 @@ int LicenseXmlHelper::print_license_infos(const XmlDocument* xml_license)
     if (!clientId.empty())
     {
         cout << "Client ID: " << clientId << endl;
+    }
+
+    string revisionId = xml_license->get_first_text(BAD_CAST "/slascone_license_file/revision_id");
+    if (!revisionId.empty())
+    {
+        cout << "Revision ID: " << revisionId << endl;
     }
 
     // Customer information
@@ -317,6 +334,55 @@ bool LicenseXmlHelper::check_license_validity(const XmlDocument* xml_license)
 
     return valid;
 }
+
+bool LicenseXmlHelper::check_license_activation(const XmlDocument* xml_license, const XmlDocument* xml_activation)
+{
+    cout << endl << "License Activation Information:" << endl;
+    cout << "-------------------------------" << endl;
+
+
+    string licenseKey = xml_license->get_first_text(BAD_CAST "/slascone_license_file/license_key");
+    string revisionId = xml_license->get_first_text(BAD_CAST "/slascone_license_file/revision_id");
+
+    string activationLicenseKey = xml_activation->get_first_text(BAD_CAST "/slascone_activation_file/license_key");
+    string activationRevisionId = xml_activation->get_first_text(BAD_CAST "/slascone_activation_file/revision_id");
+
+    // License key and revision ID must match between license and activation
+    // Revision ID can be empty. It has to be emtpy in both license and activation if not provided
+    if (!equals_ignore_case(licenseKey, activationLicenseKey))
+    {
+        cerr << "Error: License key mismatch." << endl;
+        return false;
+    }
+
+    if (revisionId.empty() && activationRevisionId.empty())
+    {
+        cout << "No Revision ID is provided in both license file and activation file." << endl;
+    }
+    else if (equals_ignore_case(revisionId, activationRevisionId))
+    {
+        cout << "Revision ID: " << revisionId << endl;
+    }
+    else
+    {
+        cerr << "Error: Revision ID mismatch. (License: " << revisionId << ", Activation: " << activationRevisionId << ")" << endl;
+        return false;
+    }
+
+    // Device ID must match the client ID in the activation
+    string clientId = xml_activation->get_first_text(BAD_CAST "/slascone_activation_file/client_id");
+    string deviceId = "24A43FCC-3674-0B19-A95F-047C160137E5";
+    if (!equals_ignore_case(deviceId, clientId))
+    {
+        cerr << "Error: Device ID does not match client ID in activation." << endl;
+        return false;
+    }
+
+    cout << "License activation is valid." << endl;
+
+    return true; // If all checks pass, the license activation is valid
+}
+
 
 bool LicenseXmlHelper::check_software_release_limitation_validity(const XmlDocument* xml_license)
 {

@@ -114,7 +114,7 @@ int Helper::activate_license()
     // Build the request body
     shared_ptr<ActivateClientDto> activateLicense = make_shared<ActivateClientDto>();
     activateLicense->setProductId(productId);
-    activateLicense->setLicenseKey(licenseKey);
+    // activateLicense->setLicenseKey(licenseKey);
     activateLicense->setClientId(get_device_id());
     activateLicense->setClientName("SLASCONE C++ sample");
     activateLicense->setSoftwareVersion(softwareRelease);
